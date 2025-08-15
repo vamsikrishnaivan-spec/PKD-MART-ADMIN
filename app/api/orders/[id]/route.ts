@@ -84,12 +84,21 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     if (status) updateData.status = status
     if (paymentMethod) updateData.paymentMethod = paymentMethod
-    if (deliveryStatus) updateData.deliveryStatus = deliveryStatus
+    if (deliveryStatus) {
+      updateData.deliveryStatus = deliveryStatus
+
+      // If delivered → mark payment as paid
+      if (deliveryStatus.toLowerCase() === "delivered") {
+        updateData.paymentStatus = "PAID"
+      }
+    }
     if (deliveryAddress) updateData.deliveryAddress = deliveryAddress
 
     const db = await getDatabase()
 
-    const result = await db.collection("orders").updateOne({ _id: new ObjectId(id) }, { $set: updateData })
+    const result = await db
+      .collection("orders")
+      .updateOne({ _id: new ObjectId(id) }, { $set: updateData })
 
     if (result.matchedCount === 0) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 })
@@ -101,3 +110,4 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
+

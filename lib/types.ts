@@ -38,11 +38,14 @@ export interface DeliveryAddress {
 export interface Order {
   _id?: ObjectId | string
   user: ObjectId | string
+  name: string
+  mobile: string
   items: CartItem[]
   totalAmount: number
   status: "PENDING" | "PAID" | "FAILED" | "CANCELLED"
+  paymentStatus: "PENDING" | "PAID" | "FAILED" | "CANCELLED"
   transactionId: string
-  paymentMethod: "PhonePe" | "COD"
+  paymentMethod: "phonepe" | "cod"
   deliveryStatus: "PROCESSING" | "DISPATCHED" | "DELIVERED"
   deliveryAddress: DeliveryAddress
   createdAt?: Date

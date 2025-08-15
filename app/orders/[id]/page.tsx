@@ -1,10 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
+import ConfirmDeliveryButton from "@/components/ConfirmDeliveryButton"
 import { Badge } from "@/components/ui/badge"
 import { getDatabase } from "@/lib/mongodb"
 import type { Order } from "@/lib/types"
-import { ArrowLeft, User, MapPin, CreditCard, Package, Truck, ExternalLink } from "lucide-react"
+import { ArrowLeft, User, MapPin, CreditCard, Package, Truck, ExternalLink, Phone } from "lucide-react"
 import Link from "next/link"
 import { ObjectId } from "mongodb"
 import { notFound } from "next/navigation"
@@ -67,7 +68,6 @@ const deliveryStatusColors = {
 
 export default async function OrderDetailsPage({ params }: { params: { id: string } }) {
   const order = await getOrderWithDetails(params.id)
-
   if (!order) {
     notFound()
   }
@@ -92,7 +92,16 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Order #{order.transactionId.slice(-8)}</span>
-                <Badge className={statusColors[order.status]}>{order.status}</Badge>
+                <Badge
+                  className={
+                    order.paymentMethod === "cod"
+                      ? statusColors[order.paymentStatus] // use paymentStatus color
+                      : statusColors[order.status] // use order status color
+                  }
+                >
+                  {order.paymentMethod === "cod" ? order.paymentStatus : order.status}
+                </Badge>
+
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -184,6 +193,18 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
               <div className="space-y-2">
                 <div className="font-medium">{(order as any).userDetails?.email || order.user}</div>
                 <div className="text-sm text-muted-foreground">User ID: {order.user}</div>
+                <div className="text-sm text-muted-foreground">User Name: {order.name}</div>
+                <div className="text-sm text-muted-foreground d-flex align-items-center gap-2">
+                  User Mobile: {order.mobile}
+                  <a
+                    href={`tel:${order.mobile}`}
+                    className="ms-3 inline-flex items-center gap-1 px-3 py-1 text-sm font-medium text-white bg-green-600 rounded-full hover:bg-green-700 transition-colors"
+                  >
+                    <Phone className="w-4 h-4" />
+                    <span>Call</span>
+                  </a>
+                </div>
+
               </div>
             </CardContent>
           </Card>
@@ -259,6 +280,10 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
               <Button variant="outline" className="w-full bg-transparent">
                 Print Order
               </Button>
+              <ConfirmDeliveryButton
+                orderId={order._id}
+                deliveryStatus={order.deliveryStatus}
+              />
             </CardContent>
           </Card>
         </div>
