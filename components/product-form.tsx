@@ -23,9 +23,7 @@ const categories = [
 async function createProduct(data: any) {
   const response = await fetch("/api/products", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   })
   if (!response.ok) {
@@ -35,24 +33,50 @@ async function createProduct(data: any) {
   return response.json()
 }
 
-export function ProductForm() {
-  const [formData, setFormData] = useState({
-    productName: "",
-    price: "",
-    imageUrl: "",
-    category: "",
+async function updateProduct(id: string, data: any) {
+  const response = await fetch(`/api/products/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
   })
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || "Failed to update product")
+  }
+  return response.json()
+}
+
+interface ProductFormProps {
+  mode?: "create" | "edit"
+  initialData?: {
+    id?: string
+    productName: string
+    price: number | string
+    imageUrl: string
+    category: string
+  }
+}
+
+export function ProductForm({ mode = "create", initialData }: ProductFormProps) {
+  const [formData, setFormData] = useState({
+    productName: initialData?.productName || "",
+    price: initialData?.price?.toString() || "",
+    imageUrl: initialData?.imageUrl || "",
+    category: initialData?.category || "",
+  })
+
   const router = useRouter()
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
-  const createMutation = useMutation({
-    mutationFn: createProduct,
+  const mutation = useMutation({
+    mutationFn: (data: any) =>
+      mode === "create" ? createProduct(data) : updateProduct(initialData?.id!, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] })
       toast({
         title: "Success",
-        description: "Product created successfully",
+        description: `Product ${mode === "create" ? "created" : "updated"} successfully`,
       })
       router.push("/products")
     },
@@ -67,7 +91,7 @@ export function ProductForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    createMutation.mutate({
+    mutation.mutate({
       ...formData,
       price: Number.parseFloat(formData.price),
     })
@@ -81,9 +105,7 @@ export function ProductForm() {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
         <div>
-          <Label htmlFor="productName" className="text-sm font-medium text-gray-700">
-            Product Name *
-          </Label>
+          <Label htmlFor="productName">Product Name *</Label>
           <Input
             id="productName"
             type="text"
@@ -91,14 +113,11 @@ export function ProductForm() {
             onChange={(e) => handleInputChange("productName", e.target.value)}
             placeholder="Enter product name"
             required
-            className="mt-1 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
           />
         </div>
 
         <div>
-          <Label htmlFor="price" className="text-sm font-medium text-gray-700">
-            Price (₹) *
-          </Label>
+          <Label htmlFor="price">Price (₹) *</Label>
           <Input
             id="price"
             type="number"
@@ -108,14 +127,11 @@ export function ProductForm() {
             onChange={(e) => handleInputChange("price", e.target.value)}
             placeholder="0.00"
             required
-            className="mt-1 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
           />
         </div>
 
         <div>
-          <Label htmlFor="imageUrl" className="text-sm font-medium text-gray-700">
-            Image URL *
-          </Label>
+          <Label htmlFor="imageUrl">Image URL *</Label>
           <Input
             id="imageUrl"
             type="url"
@@ -123,16 +139,13 @@ export function ProductForm() {
             onChange={(e) => handleInputChange("imageUrl", e.target.value)}
             placeholder="https://example.com/image.jpg"
             required
-            className="mt-1 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
           />
         </div>
 
         <div>
-          <Label htmlFor="category" className="text-sm font-medium text-gray-700">
-            Category *
-          </Label>
+          <Label htmlFor="category">Category *</Label>
           <Select value={formData.category} onValueChange={(value) => handleInputChange("category", value)}>
-            <SelectTrigger className="mt-1 border-gray-200 focus:border-blue-500 focus:ring-blue-500">
+            <SelectTrigger>
               <SelectValue placeholder="Select a category" />
             </SelectTrigger>
             <SelectContent>
@@ -147,21 +160,19 @@ export function ProductForm() {
       </div>
 
       <div className="flex gap-3 pt-4">
-        <Button
-          type="submit"
-          disabled={createMutation.isPending}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-        >
-          {createMutation.isPending ? (
+        <Button type="submit" disabled={mutation.isPending}>
+          {mutation.isPending ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Creating...
+              {mode === "create" ? "Creating..." : "Updating..."}
             </>
-          ) : (
+          ) : mode === "create" ? (
             "Create Product"
+          ) : (
+            "Update Product"
           )}
         </Button>
-        <Button type="button" variant="outline" onClick={() => router.push("/products")} className="bg-white">
+        <Button type="button" variant="outline" onClick={() => router.push("/products")}>
           Cancel
         </Button>
       </div>

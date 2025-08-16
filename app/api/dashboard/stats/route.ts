@@ -44,7 +44,6 @@ export async function GET() {
       lastUpdated: new Date().toISOString(),
     }
 
-    console.log("Dashboard stats:", response) // Debug log
 
     return NextResponse.json(response, {
       headers: {

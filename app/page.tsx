@@ -19,7 +19,6 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 async function fetchDashboardStats() {
-  console.log("Fetching dashboard stats...") // Debug log
 
   const response = await fetch("/api/dashboard/stats", {
     cache: "no-store",
@@ -34,7 +33,6 @@ async function fetchDashboardStats() {
   }
 
   const data = await response.json()
-  console.log("Dashboard stats received:", data) // Debug log
 
   return data
 }
@@ -54,7 +52,6 @@ export default function Dashboard() {
     retryDelay: 1000,
   })
 
-  console.log("Query state:", { isLoading, isError, error, stats }) // Debug log
 
   const statCards = [
     {

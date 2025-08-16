@@ -6,12 +6,13 @@ import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Toaster } from "@/components/ui/toaster"
 import { QueryProvider } from "@/components/query-provider"
+import  PwaInstallButton  from "@/components/PwaInstallButton"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Admin Dashboard - Professional MongoDB Management",
-  description: "Professional MongoDB Admin Dashboard for managing Users, Products, and Orders",
+  title: "Admin PKD Mart",
+  description: "Professional PKD Mart Admin Dashboard for managing Users, Products, and Orders",
     generator: 'v0.app'
 }
 
@@ -29,6 +30,7 @@ export default function RootLayout({
               <AppSidebar />
               <main className="flex-1 overflow-auto bg-gray-50">{children}</main>
             </div>
+            <PwaInstallButton />
             <Toaster />
           </SidebarProvider>
         </QueryProvider>
