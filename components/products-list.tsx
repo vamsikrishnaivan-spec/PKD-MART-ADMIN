@@ -174,16 +174,16 @@ export function ProductsList({ products, isLoading, error }: ProductsListProps) 
               <div className="flex gap-3 mb-3">
                 <Image
                   src={product.imageUrl || "/placeholder.svg?height=64&width=64"}
-                  alt={product.productName}
+                  alt={product.name}
                   width={64}
                   height={64}
                   className="rounded-lg object-cover border border-gray-200"
                 />
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 truncate">{product.productName}</h3>
+                  <h3 className="font-semibold text-gray-900 truncate">{product.name}</h3>
                   <div className="flex items-center gap-2 mt-1">
                     <DollarSign className="h-4 w-4 text-green-600" />
-                    <span className="text-lg font-bold text-green-600">₹{product.price.toFixed(2)}</span>
+                    <span className="text-lg font-bold text-green-600">₹{product.sellingPrice}</span>
                   </div>
                   <Badge className={`${categoryColors[product.category]} text-xs mt-2`}>{product.category}</Badge>
                 </div>
@@ -221,7 +221,7 @@ export function ProductsList({ products, isLoading, error }: ProductsListProps) 
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete Product</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Are you sure you want to delete "{product.productName}"? This action cannot be undone.
+                        Are you sure you want to delete "{product.name}"? This action cannot be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -260,13 +260,13 @@ export function ProductsList({ products, isLoading, error }: ProductsListProps) 
                   <div className="flex items-center gap-3">
                     <Image
                       src={product.imageUrl || "/placeholder.svg?height=48&width=48"}
-                      alt={product.productName}
+                      alt={product.name}
                       width={48}
                       height={48}
                       className="rounded-lg object-cover border border-gray-200"
                     />
                     <div>
-                      <p className="font-semibold text-gray-900">{product.productName}</p>
+                      <p className="font-semibold text-gray-900">{product.name}</p>
                       <p className="text-sm text-gray-500">ID: {product._id?.toString().slice(-8)}</p>
                     </div>
                   </div>
@@ -274,7 +274,7 @@ export function ProductsList({ products, isLoading, error }: ProductsListProps) 
                 <TableCell>
                   <div className="flex items-center gap-1">
                     <DollarSign className="h-4 w-4 text-green-600" />
-                    <span className="font-bold text-green-600">₹{product.price.toFixed(2)}</span>
+                    <span className="font-bold text-green-600">₹{product.sellingPrice}</span>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -310,7 +310,7 @@ export function ProductsList({ products, isLoading, error }: ProductsListProps) 
                         <AlertDialogHeader>
                           <AlertDialogTitle>Delete Product</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Are you sure you want to delete "{product.productName}"? This action cannot be undone.
+                            Are you sure you want to delete "{product.name}"? This action cannot be undone.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

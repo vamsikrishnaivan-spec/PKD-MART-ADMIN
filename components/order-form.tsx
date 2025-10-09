@@ -15,14 +15,24 @@ interface User {
   _id: string
   email: string
 }
-
-interface Product {
+export interface Product {
   _id: string
-  productName: string
-  price: number
-  imageUrl: string
+  upc: string
+  name: string
+  brand: string
   category: string
+  subcategory: string
+  manufacturer: string
+  model: string | null
+  description: string
+  mrp: number | null
+  sellingPrice: number
+  currency: string
+  imageUrl: string
+  createdAt: string
+  updatedAt: string
 }
+
 
 interface OrderItem {
   productId: string
@@ -199,7 +209,7 @@ export function OrderForm() {
                   <SelectContent>
                     {products.map((product) => (
                       <SelectItem key={product._id} value={product._id}>
-                        {product.productName} - ₹{product.price.toFixed(2)}
+                        {product.productName} - ₹{product.sellingPrice}
                       </SelectItem>
                     ))}
                   </SelectContent>

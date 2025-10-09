@@ -14,14 +14,23 @@ export interface User {
 }
 
 export interface Product {
-  _id?: ObjectId | string
-  productName: string
-  price: number
+  _id: string
+  upc: string
+  name: string
+  brand: string
+  category: string
+  subcategory: string
+  manufacturer: string
+  model: string | null
+  description: string
+  mrp: number | null
+  sellingPrice: number
+  currency: string
   imageUrl: string
-  category: "vegetables" | "fruits" | "dairy" | "essentials" | "snacks" | "instant-food"
-  createdAt?: Date
-  updatedAt?: Date
+  createdAt: string
+  updatedAt: string
 }
+
 
 export interface DeliveryAddress {
   street: string

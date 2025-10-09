@@ -1,24 +1,14 @@
 "use client"
 
 import type React from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Loader2 } from "lucide-react"
-
-const categories = [
-  { value: "vegetables", label: "Vegetables" },
-  { value: "fruits", label: "Fruits" },
-  { value: "dairy", label: "Dairy" },
-  { value: "essentials", label: "Essentials" },
-  { value: "snacks", label: "Snacks" },
-  { value: "instant-food", label: "Instant Food" },
-]
 
 async function createProduct(data: any) {
   const response = await fetch("/api/products", {
@@ -48,23 +38,26 @@ async function updateProduct(id: string, data: any) {
 
 interface ProductFormProps {
   mode?: "create" | "edit"
-  initialData?: {
-    id?: string
-    productName: string
-    price: number | string
-    imageUrl: string
-    category: string
-  }
+  initialData?: any
 }
 
 export function ProductForm({ mode = "create", initialData }: ProductFormProps) {
   const [formData, setFormData] = useState({
-    productName: initialData?.productName || "",
-    price: initialData?.price?.toString() || "",
-    imageUrl: initialData?.imageUrl || "",
+    upc: initialData?.upc || "",
+    name: initialData?.name || "",
+    brand: initialData?.brand || "",
     category: initialData?.category || "",
+    subcategory: initialData?.subcategory || "",
+    manufacturer: initialData?.manufacturer || "",
+    model: initialData?.model || "",
+    description: initialData?.description || "",
+    mrp: initialData?.mrp?.toString() || "",
+    sellingPrice: initialData?.sellingPrice?.toString() || "",
+    currency: initialData?.currency || "INR",
+    imageUrl: initialData?.imageUrl || "",
   })
 
+  const [loadingUPC, setLoadingUPC] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
   const queryClient = useQueryClient()
@@ -78,7 +71,25 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
         title: "Success",
         description: `Product ${mode === "create" ? "created" : "updated"} successfully`,
       })
-      router.push("/products")
+      if (mode === "create") {
+        setFormData({
+          upc: "",
+          name: "",
+          brand: "",
+          category: "",
+          subcategory: "",
+          manufacturer: "",
+          model: "",
+          description: "",
+          mrp: "",
+          sellingPrice: "",
+          currency: "INR",
+          imageUrl: "",
+        })
+      } else {
+        // For edit mode, redirect to products list
+        router.push("/products")
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -89,11 +100,50 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
     },
   })
 
+  // 🔍 Autofill from UPC API
+  const handleAutofill = async () => {
+    if (!formData.upc) {
+      toast({ title: "Missing UPC", description: "Enter a UPC to autofill details.", variant: "destructive" })
+      return
+    }
+
+    try {
+      setLoadingUPC(true)
+      const res = await fetch("/api/fetch-by-upc", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ upc: formData.upc }),
+      })
+
+      if (!res.ok) throw new Error("Failed to fetch UPC details")
+
+      const data = await res.json()
+
+      // Merge the fetched data with the existing form
+      setFormData((prev) => ({
+        ...prev,
+        ...data,
+        imageUrl: data.images?.[0] || prev.imageUrl,
+        sellingPrice: data.pricing?.sellingPrice?.toString() || prev.sellingPrice,
+        mrp: data.pricing?.mrp?.toString() || prev.mrp,
+        currency: data.pricing?.currency || "INR",
+      }))
+
+      toast({ title: "Autofill successful", description: "Product details loaded from UPC." })
+    } catch (error: any) {
+      console.error(error)
+      toast({ title: "Autofill failed", description: error.message, variant: "destructive" })
+    } finally {
+      setLoadingUPC(false)
+    }
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     mutation.mutate({
       ...formData,
-      price: Number.parseFloat(formData.price),
+      mrp: Number(formData.mrp),
+      sellingPrice: Number(formData.sellingPrice),
     })
   }
 
@@ -103,59 +153,83 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="productName">Product Name *</Label>
+      {/* UPC Autofill Section */}
+      <div className="flex gap-2 items-end">
+        <div className="flex-1">
+          <Label htmlFor="upc">UPC *</Label>
           <Input
-            id="productName"
+            id="upc"
             type="text"
-            value={formData.productName}
-            onChange={(e) => handleInputChange("productName", e.target.value)}
-            placeholder="Enter product name"
+            value={formData.upc}
+            onChange={(e) => handleInputChange("upc", e.target.value)}
+            placeholder="Enter UPC e.g. 8901287101010"
             required
           />
         </div>
+        <Button type="button" onClick={handleAutofill} disabled={loadingUPC}>
+          {loadingUPC ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : "Autofill"}
+        </Button>
+      </div>
 
+      {/* Product Fields */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="price">Price (₹) *</Label>
+          <Label>Name</Label>
+          <Input value={formData.name} onChange={(e) => handleInputChange("name", e.target.value)} />
+        </div>
+        <div>
+          <Label>Brand</Label>
+          <Input value={formData.brand} onChange={(e) => handleInputChange("brand", e.target.value)} />
+        </div>
+        <div>
+          <Label>Manufacturer</Label>
+          <Input value={formData.manufacturer} onChange={(e) => handleInputChange("manufacturer", e.target.value)} />
+        </div>
+        <div>
+          <Label>Model</Label>
+          <Input value={formData.model} onChange={(e) => handleInputChange("model", e.target.value)} />
+        </div>
+        <div>
+          <Label>Category</Label>
+          <Input value={formData.category} onChange={(e) => handleInputChange("category", e.target.value)} />
+        </div>
+        <div>
+          <Label>Subcategory</Label>
+          <Input value={formData.subcategory} onChange={(e) => handleInputChange("subcategory", e.target.value)} />
+        </div>
+        <div className="col-span-2">
+          <Label>Description</Label>
+          <Input value={formData.description} onChange={(e) => handleInputChange("description", e.target.value)} />
+        </div>
+        <div>
+          <Label>MRP (₹)</Label>
           <Input
-            id="price"
             type="number"
-            step="0.01"
-            min="0"
-            value={formData.price}
-            onChange={(e) => handleInputChange("price", e.target.value)}
-            placeholder="0.00"
-            required
+            value={formData.mrp}
+            onChange={(e) => handleInputChange("mrp", e.target.value)}
+            placeholder="e.g. 100"
           />
         </div>
-
         <div>
-          <Label htmlFor="imageUrl">Image URL *</Label>
+          <Label>Selling Price (₹)</Label>
           <Input
-            id="imageUrl"
-            type="url"
+            type="number"
+            value={formData.sellingPrice}
+            onChange={(e) => handleInputChange("sellingPrice", e.target.value)}
+            placeholder="e.g. 80"
+          />
+        </div>
+        <div>
+          <Label>Currency</Label>
+          <Input value={formData.currency} readOnly />
+        </div>
+        <div className="col-span-2">
+          <Label>Image URL</Label>
+          <Input
             value={formData.imageUrl}
             onChange={(e) => handleInputChange("imageUrl", e.target.value)}
             placeholder="https://example.com/image.jpg"
-            required
           />
-        </div>
-
-        <div>
-          <Label htmlFor="category">Category *</Label>
-          <Select value={formData.category} onValueChange={(value) => handleInputChange("category", value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a category" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((category) => (
-                <SelectItem key={category.value} value={category.value}>
-                  {category.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
       </div>
 

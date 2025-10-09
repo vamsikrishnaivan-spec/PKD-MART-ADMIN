@@ -28,7 +28,7 @@ export default function ProductsPage() {
     queryFn: fetchProducts,
   })
 
-  const totalValue = products.reduce((sum: number, product: any) => sum + (product.price || 0), 0)
+  const totalValue = products.reduce((sum: number, product: any) => sum + (product.sellingPrice || 0), 0)
   const categories = [...new Set(products.map((p: any) => p.category))].length
 
   return (

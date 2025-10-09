@@ -4,42 +4,63 @@ import { getDatabase } from "@/lib/mongodb"
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { productName, price, imageUrl, category } = body
+    const {
+      upc,
+      name,
+      brand,
+      category,
+      subcategory,
+      manufacturer,
+      model,
+      description,
+      mrp,
+      sellingPrice,
+      currency,
+      imageUrl,
+    } = body
 
-    if (!productName || !price || !imageUrl || !category) {
-      return NextResponse.json({ error: "All fields are required" }, { status: 400 })
+    // ✅ Validate required fields
+    if (!upc || !name || !category || !sellingPrice || !currency) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    if (price <= 0) {
-      return NextResponse.json({ error: "Price must be greater than 0" }, { status: 400 })
-    }
-
-    const validCategories = ["vegetables", "fruits", "dairy", "essentials", "snacks", "instant-food"]
-    if (!validCategories.includes(category)) {
-      return NextResponse.json({ error: "Invalid category" }, { status: 400 })
+    // ✅ Price validation
+    if (sellingPrice <= 0) {
+      return NextResponse.json({ error: "Selling price must be greater than 0" }, { status: 400 })
     }
 
     const db = await getDatabase()
 
-    const result = await db.collection("products").insertOne({
-      productName,
-      price: Number.parseFloat(price),
-      imageUrl,
+    const product = {
+      upc,
+      name,
+      brand: brand || "",
       category,
+      subcategory: subcategory || "",
+      manufacturer: manufacturer || "",
+      model: model || "",
+      description: description || "",
+      mrp: mrp ? Number(mrp) : null,
+      sellingPrice: Number(sellingPrice),
+      currency,
+      imageUrl: imageUrl || "/assets/placeholder.webp",
       createdAt: new Date(),
       updatedAt: new Date(),
-    })
+    }
+
+    const result = await db.collection("products").insertOne(product)
 
     return NextResponse.json(
       {
         success: true,
         productId: result.insertedId,
+        product,
       },
       { status: 201 },
     )
   } catch (error) {
-    console.error("Error creating product:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error("❌ Error creating product:", error)
+    return NextResponse.json({ error: `Error:-${error}` }, { status: 500 })
   }
 }
 
@@ -47,10 +68,9 @@ export async function GET() {
   try {
     const db = await getDatabase()
     const products = await db.collection("products").find({}).sort({ createdAt: -1 }).toArray()
-
     return NextResponse.json(products)
   } catch (error) {
-    console.error("Error fetching products:", error)
+    console.error("❌ Error fetching products:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

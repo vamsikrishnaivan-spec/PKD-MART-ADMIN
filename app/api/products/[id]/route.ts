@@ -55,13 +55,13 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "Invalid product ID" }, { status: 400 })
     }
 
-    const { productName, price, imageUrl, category } = body
+    const { name, sellingPrice, imageUrl, category } = body
 
-    if (!productName || !price || !imageUrl || !category) {
+    if (!name || !sellingPrice || !imageUrl || !category) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 })
     }
 
-    if (price <= 0) {
+    if (sellingPrice <= 0) {
       return NextResponse.json({ error: "Price must be greater than 0" }, { status: 400 })
     }
 
@@ -76,8 +76,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       { _id: new ObjectId(id) },
       {
         $set: {
-          productName,
-          price: Number.parseFloat(price),
+          name,
+          price: Number.parseFloat(sellingPrice),
           imageUrl,
           category,
           updatedAt: new Date(),
