@@ -155,10 +155,10 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
                     />
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium truncate">
-                        {item.productDetails?.productName || `Product ${item.productId}`}
+                        {item.productDetails?.name || `Product ${item.productId}`}
                       </h3>
                       <div className="text-sm text-muted-foreground">
-                        ₹{item.productDetails?.price?.toFixed(2) || "0.00"} × {item.quantity}
+                        ₹{item.productDetails?.sellingPrice?.toFixed(2) || "0.00"} × {item.quantity}
                       </div>
                       {item.productDetails?.category && (
                         <Badge variant="secondary" className="text-xs mt-1">
@@ -168,7 +168,7 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
                     </div>
                     <div className="text-right">
                       <div className="font-medium">
-                        ₹{((item.productDetails?.price || 0) * item.quantity).toFixed(2)}
+                        ₹{((item.productDetails?.sellingPrice || 0) * item.quantity).toFixed(2)}
                       </div>
                       <div className="text-sm text-muted-foreground">Qty: {item.quantity}</div>
                     </div>

@@ -57,6 +57,7 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
     imageUrl: initialData?.imageUrl || "",
   })
 
+  const [uploading, setUploading] = useState(false)
   const [loadingUPC, setLoadingUPC] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
@@ -135,6 +136,33 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
       toast({ title: "Autofill failed", description: error.message, variant: "destructive" })
     } finally {
       setLoadingUPC(false)
+    }
+  }
+   // 📸 Handle Image Upload to Cloudinary
+   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      setUploading(true)
+      const formDataUpload = new FormData()
+      formDataUpload.append("file", file)
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formDataUpload,
+      })
+
+      if (!res.ok) throw new Error("Image upload failed")
+      const data = await res.json()
+
+      setFormData((prev) => ({ ...prev, imageUrl: data.secure_url }))
+      toast({ title: "Image uploaded", description: "Successfully uploaded to Cloudinary." })
+    } catch (error: any) {
+      console.error(error)
+      toast({ title: "Upload failed", description: error.message, variant: "destructive" })
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -224,12 +252,18 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
           <Input value={formData.currency} readOnly />
         </div>
         <div className="col-span-2">
-          <Label>Image URL</Label>
-          <Input
-            value={formData.imageUrl}
-            onChange={(e) => handleInputChange("imageUrl", e.target.value)}
-            placeholder="https://example.com/image.jpg"
-          />
+          <Label>Upload Image</Label>
+          <div className="flex items-center gap-3">
+            <Input type="file" accept="image/*" onChange={handleImageUpload} />
+            {uploading && <Loader2 className="h-4 w-4 animate-spin" />}
+            {formData.imageUrl && (
+              <img
+                src={formData.imageUrl}
+                alt="Preview"
+                className="w-20 h-20 object-cover rounded border"
+              />
+            )}
+          </div>
         </div>
       </div>
 

@@ -79,9 +79,9 @@ export default function ProductsPage() {
         <Card className="border-0 shadow-sm bg-white">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-50 rounded-lg">
-                <DollarSign className="h-5 w-5 text-green-600" />
-              </div>
+              {/* <div className="p-2 bg-green-50 rounded-lg">
+                // <DollarSign className="h-5 w-5 text-green-600" />
+              </div> */}
               <div>
                 <p className="text-sm text-gray-600">Total Value</p>
                 <p className="text-2xl font-bold text-gray-900">

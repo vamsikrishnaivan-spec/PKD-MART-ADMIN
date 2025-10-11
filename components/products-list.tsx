@@ -182,7 +182,7 @@ export function ProductsList({ products, isLoading, error }: ProductsListProps) 
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-900 truncate">{product.name}</h3>
                   <div className="flex items-center gap-2 mt-1">
-                    <DollarSign className="h-4 w-4 text-green-600" />
+                    {/* <DollarSign className="h-4 w-4 text-green-600" /> */}
                     <span className="text-lg font-bold text-green-600">₹{product.sellingPrice}</span>
                   </div>
                   <Badge className={`${categoryColors[product.category]} text-xs mt-2`}>{product.category}</Badge>
@@ -273,7 +273,6 @@ export function ProductsList({ products, isLoading, error }: ProductsListProps) 
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
-                    <DollarSign className="h-4 w-4 text-green-600" />
                     <span className="font-bold text-green-600">₹{product.sellingPrice}</span>
                   </div>
                 </TableCell>
