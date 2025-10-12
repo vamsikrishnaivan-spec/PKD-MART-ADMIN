@@ -59,6 +59,8 @@ export interface Order {
   deliveryAddress: DeliveryAddress
   createdAt?: Date
   updatedAt?: Date
+  orderType?: string
+  deliverySlot:string
 }
 
 export interface DashboardStats {

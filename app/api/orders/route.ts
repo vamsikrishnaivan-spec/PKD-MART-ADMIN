@@ -5,7 +5,7 @@ import { ObjectId } from "mongodb"
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { user, items, totalAmount, status, transactionId, paymentMethod, deliveryStatus, deliveryAddress } = body
+    const { user, items, totalAmount, status, transactionId, paymentMethod, deliveryStatus, deliveryAddress, orderType="Scheduled", deliverySlot=null   } = body
 
     // Validation
     if (!user || !items || !Array.isArray(items) || items.length === 0) {
@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
       productId: new ObjectId(item.productId),
       quantity: Number.parseInt(item.quantity),
     }))
+    const isQuick = orderType === "Quick";
 
     const result = await db.collection("orders").insertOne({
       user: new ObjectId(user),
@@ -67,6 +68,8 @@ export async function POST(request: NextRequest) {
       paymentMethod: paymentMethod || "PhonePe",
       deliveryStatus: deliveryStatus || "PROCESSING",
       deliveryAddress,
+      orderType: isQuick ? "Quick" : "Scheduled",
+      deliverySlot: isQuick ? null : deliverySlot || "6–8 AM", // null if quick
       createdAt: new Date(),
       updatedAt: new Date(),
     })

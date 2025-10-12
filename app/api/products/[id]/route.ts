@@ -55,7 +55,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "Invalid product ID" }, { status: 400 })
     }
 
-    const { name, sellingPrice, imageUrl, category } = body
+    const { name, sellingPrice, imageUrl, category, model, description, subcategory, brand, manufacturer, mrp } = body
 
     if (!name || !sellingPrice || !imageUrl || !category) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 })
@@ -77,14 +77,20 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       {
         $set: {
           name,
-          price: Number.parseFloat(sellingPrice),
+          sellingPrice: Number.parseFloat(sellingPrice),
           imageUrl,
           category,
           updatedAt: new Date(),
+          model,
+          description,
+          subcategory,
+          brand,
+          manufacturer,
+          mrp
         },
       },
     )
-
+     console.log(result,"result")
     if (result.matchedCount === 0) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 })
     }

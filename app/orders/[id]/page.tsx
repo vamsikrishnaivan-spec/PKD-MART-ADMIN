@@ -125,6 +125,20 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
                   </Badge>
                 </div>
                 <div>
+                  <div className="text-sm text-muted-foreground">Delivery Type</div>
+                  <Badge className={`bg-blue-100 text-blue-800 mt-1`}>
+                    <Truck className="h-3 w-3 mr-1" />
+                    {order.orderType}
+                  </Badge>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Delivery Time Slot</div>
+                  <Badge className={`bg-blue-100 text-blue-800 mt-1`}>
+                    <Truck className="h-3 w-3 mr-1" />
+                    {order.deliverySlot}
+                  </Badge>
+                </div>
+                <div>
                   <div className="text-sm text-muted-foreground">Order Date</div>
                   <div className="font-medium">
                     {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A"}
