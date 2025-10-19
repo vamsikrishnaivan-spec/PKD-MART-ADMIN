@@ -117,7 +117,7 @@ export async function POST(req: Request) {
 
     // Call external endpoint with orderId & otp
     const res = await fetch(
-      "https://3000-firebase-pkd-martgit-1753539761403.cluster-c23mj7ubf5fxwq6nrbev4ugaxa.cloudworkstations.dev/api/order/68f4a3f26ff3e8e4d779f82f",
+      "https://pkdmart.com/api/order/68f4a3f26ff3e8e4d779f82f",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
