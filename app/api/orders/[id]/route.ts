@@ -111,3 +111,28 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
+export async function POST(req: Request) {
+  try {
+    const { orderId, otp } = await req.json();
+
+    // Call external endpoint with orderId & otp
+    const res = await fetch(
+      "https://3000-firebase-pkd-martgit-1753539761403.cluster-c23mj7ubf5fxwq6nrbev4ugaxa.cloudworkstations.dev/api/order/68f4a3f26ff3e8e4d779f82f",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, otp }),
+      }
+    );
+
+    const data = await res.json();
+
+    return NextResponse.json(data, { status: res.status });
+  } catch (error) {
+    console.error("Error in backend POST proxy:", error);
+    return NextResponse.json(
+      { success: false, message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}

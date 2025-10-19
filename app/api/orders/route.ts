@@ -90,11 +90,44 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   try {
     const db = await getDatabase()
+
+    // Fetch orders
     const orders = await db.collection("orders").find({}).sort({ createdAt: -1 }).toArray()
 
-    return NextResponse.json(orders)
+    if (orders.length === 0) return NextResponse.json([], { status: 200 })
+
+    // Collect all unique product IDs
+    const productIds = orders
+      .flatMap(order => order.items.map((item: any) => item.productId))
+      .map((id: any) => new ObjectId(id))
+
+    // Fetch products
+    const products = await db
+      .collection("products")
+      .find({ _id: { $in: productIds } })
+      .toArray()
+
+    // Map products by ID for easy lookup
+    const productMap = new Map(products.map(p => [p._id.toString(), p]))
+
+    // Merge product details into order items
+    const populatedOrders = orders.map(order => ({
+      ...order,
+      items: order.items.map((item: any) => {
+        const product = productMap.get(item.productId.toString())
+        return {
+          ...item,
+          name: product?.name || "Unknown Product",
+          price: product?.sellingPrice || 0,
+          image: product?.imageUrl || ""
+        }
+      }),
+    }))
+
+    return NextResponse.json(populatedOrders, { status: 200 })
   } catch (error) {
     console.error("Error fetching orders:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
+

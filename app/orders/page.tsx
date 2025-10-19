@@ -9,6 +9,7 @@ import { OrdersList } from "@/components/orders-list"
 import { OrderFilters } from "@/components/order-filters"
 import { ShoppingCart, Clock, CheckCircle, Truck, Shield } from "lucide-react"
 import { useState } from "react"
+import OrdersMap from "@/components/OrdersMap"
 
 async function fetchOrders(filters: any = {}) {
   const params = new URLSearchParams()
@@ -38,6 +39,7 @@ export default function OrdersPage() {
   const pendingOrders = orders.filter((o: any) => o.status === "PENDING").length
   const paidOrders = orders.filter((o: any) => o.status === "PAID").length
   const processingOrders = orders.filter((o: any) => o.deliveryStatus === "PROCESSING").length
+  console.log(orders,"orders")
 
   return (
     <div className="p-6 space-y-6">
@@ -128,6 +130,8 @@ export default function OrdersPage() {
           <OrderFilters onFiltersChange={setFilters} />
         </CardContent>
       </Card>
+
+      <OrdersMap orders={orders.filter((o: any) => o.deliveryStatus === "PROCESSING")}/>
 
       {/* Orders List */}
       <Card className="border-0 shadow-sm bg-white">
