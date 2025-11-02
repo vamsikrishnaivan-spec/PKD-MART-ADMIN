@@ -22,6 +22,11 @@ interface CartItem {
   name: string
   quantity: number
   price: number
+  productId:{
+    name: string
+    sellingPrice: number
+    imageUrl: string
+  }
 }
 
 interface Order {
@@ -34,7 +39,6 @@ interface Order {
 }
 
 export default function OrdersMap({ orders }: { orders: Order[] }) {
-    console.log(orders,"orders map")
   const router = useRouter()
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
@@ -46,7 +50,6 @@ export default function OrdersMap({ orders }: { orders: Order[] }) {
       ? { lat: orders[0].deliveryAddress.lat, lng: orders[0].deliveryAddress.lng }
       : { lat: 20.5937, lng: 78.9629 }
   )
-  console.log(selectedOrder,"selected")
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -200,17 +203,17 @@ export default function OrdersMap({ orders }: { orders: Order[] }) {
                 <div key={idx} className="flex items-center justify-between text-sm border-b last:border-b-0 pb-1">
                   {/* Image */}
                   <img
-                    src={item.image || "/assets/comingsoon.webp"}
+                    src={item.productId.imageUrl || "/assets/comingsoon.webp"}
                     alt={item.name}
                     className="w-10 h-10 object-cover rounded mr-2"
                   />
                   {/* Name & Quantity */}
                   <div className="flex-1">
-                    <div className="font-medium">{item.name}</div>
+                    <div className="font-medium">{item.productId.name}</div>
                     <div className="text-gray-500 text-xs">Qty: {item.quantity}</div>
                   </div>
                   {/* Price */}
-                  <div className="font-semibold">₹{item.price * item.quantity}</div>
+                  <div className="font-semibold">₹{item.productId.sellingPrice * item.quantity}</div>
                 </div>
               ))}
             </div>

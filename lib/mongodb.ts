@@ -1,33 +1,34 @@
-import { MongoClient, type Db } from "mongodb"
+import mongoose, { type Mongoose } from "mongoose"
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Invalid/Missing environment variable: "MONGODB_URI"')
+const MONGODB_URI = process.env.MONGODB_URI as string
+
+if (!MONGODB_URI) {
+  throw new Error('❌ Please define the MONGODB_URI environment variable')
 }
 
-const uri = process.env.MONGODB_URI
-const options = {}
+// 👇 Declare a properly typed global for hot-reload caching
+declare global {
+  // eslint-disable-next-line no-var
+  var _mongooseCache: { conn: Mongoose | null; promise: Promise<Mongoose> | null } | undefined
+}
 
-let client: MongoClient
-let clientPromise: Promise<MongoClient>
+// 👇 Initialize global cache if it doesn't exist
+if (!global._mongooseCache) {
+  global._mongooseCache = { conn: null, promise: null }
+}
 
-if (process.env.NODE_ENV === "development") {
-  const globalWithMongo = global as typeof globalThis & {
-    _mongoClientPromise?: Promise<MongoClient>
+// 👇 Now safely reference the cache
+const cached = global._mongooseCache
+
+export async function getDatabase(): Promise<Mongoose> {
+  if (cached.conn) return cached.conn
+
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(MONGODB_URI, {
+      bufferCommands: false,
+    })
   }
 
-  if (!globalWithMongo._mongoClientPromise) {
-    client = new MongoClient(uri, options)
-    globalWithMongo._mongoClientPromise = client.connect()
-  }
-  clientPromise = globalWithMongo._mongoClientPromise
-} else {
-  client = new MongoClient(uri, options)
-  clientPromise = client.connect()
+  cached.conn = await cached.promise
+  return cached.conn
 }
-
-export async function getDatabase(): Promise<Db> {
-  const client = await clientPromise
-  return client.db()
-}
-
-export default clientPromise

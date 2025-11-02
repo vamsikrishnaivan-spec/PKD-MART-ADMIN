@@ -45,8 +45,8 @@ export interface DeliveryAddress {
 }
 
 export interface Order {
-  _id?: ObjectId | string
-  user: ObjectId | string
+  _id: string
+  user: string
   name: string
   mobile: string
   items: CartItem[]

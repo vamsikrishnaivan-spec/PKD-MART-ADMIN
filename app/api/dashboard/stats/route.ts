@@ -1,37 +1,29 @@
 import { NextResponse } from "next/server"
-import { getDatabase } from "@/lib/mongodb"
+import { getDatabase as connectDB } from "@/lib/mongodb"
+import User from "@/models/User"
+import Product from "@/models/Product"
+import Order from "@/models/Order"
 
 export const dynamic = "force-dynamic"
 
 export async function GET() {
   try {
-    const db = await getDatabase()
+    await connectDB()
 
-    const [totalUsers, totalProducts, totalOrders, pendingOrders, paidOrders, processingOrders] = await Promise.all([
-      db
-        .collection("users")
-        .countDocuments()
-        .catch(() => 0),
-      db
-        .collection("products")
-        .countDocuments()
-        .catch(() => 0),
-      db
-        .collection("orders")
-        .countDocuments()
-        .catch(() => 0),
-      db
-        .collection("orders")
-        .countDocuments({ DELIVERED: "PENDING" })
-        .catch(() => 0),
-      db
-        .collection("orders")
-        .countDocuments({ deliveryStatus: "DELIVERED" })
-        .catch(() => 0),
-      db
-        .collection("orders")
-        .countDocuments({ deliveryStatus: "PROCESSING" })
-        .catch(() => 0),
+    const [
+      totalUsers,
+      totalProducts,
+      totalOrders,
+      pendingOrders,
+      paidOrders,
+      processingOrders,
+    ] = await Promise.all([
+      User.countDocuments().catch(() => 0),
+      Product.countDocuments().catch(() => 0),
+      Order.countDocuments().catch(() => 0),
+      Order.countDocuments({ deliveryStatus: "PENDING" }).catch(() => 0),
+      Order.countDocuments({ deliveryStatus: "DELIVERED" }).catch(() => 0),
+      Order.countDocuments({ deliveryStatus: "PROCESSING" }).catch(() => 0),
     ])
 
     const response = {
@@ -44,7 +36,6 @@ export async function GET() {
       lastUpdated: new Date().toISOString(),
     }
 
-
     return NextResponse.json(response, {
       headers: {
         "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -53,7 +44,7 @@ export async function GET() {
       },
     })
   } catch (error) {
-    console.error("Error fetching dashboard stats:", error)
+    console.error("❌ Error fetching dashboard stats:", error)
 
     return NextResponse.json(
       {

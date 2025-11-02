@@ -54,7 +54,6 @@ export async function POST(req: Request) {
       product = JSON.parse(content)
     } catch (parseError) {
       console.error("JSON parse failed:", parseError)
-      console.log("Raw content:", content)
       return NextResponse.json({ error: "Failed to parse model JSON" }, { status: 500 })
     }
 

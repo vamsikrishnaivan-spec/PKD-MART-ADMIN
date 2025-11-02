@@ -1,3 +1,5 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
@@ -7,51 +9,31 @@ import { getDatabase } from "@/lib/mongodb"
 import type { Order } from "@/lib/types"
 import { ArrowLeft, User, MapPin, CreditCard, Package, Truck, ExternalLink, Phone } from "lucide-react"
 import Link from "next/link"
-import { ObjectId } from "mongodb"
 import { notFound } from "next/navigation"
+import { useQuery } from "@tanstack/react-query"
+import { Skeleton } from "@/components/ui/skeleton"
 import Image from "next/image"
 
-async function getOrderWithDetails(id: string): Promise<Order | null> {
+export async function fetchOrderById(id: string) {
   try {
-    if (!ObjectId.isValid(id)) {
-      return null
+    // ✅ Use backticks for template literal
+    const res = await fetch(`/api/orders/${id}`, {
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch order: ${res.statusText}`);
     }
 
-    const db = await getDatabase()
-
-    const order = await db.collection("orders").findOne({ _id: new ObjectId(id) })
-    if (!order) return null
-
-    // Get user details
-    const user = await db.collection("users").findOne({ _id: new ObjectId(order.user) })
-
-    // Get product details for all items
-    const productIds = order.items?.map((item: any) => new ObjectId(item.productId)) || []
-    const products = await db
-      .collection("products")
-      .find({ _id: { $in: productIds } })
-      .toArray()
-
-    // Create product lookup map
-    const productMap = new Map(products.map((product) => [product._id.toString(), product]))
-
-    return {
-      ...order,
-      _id: order._id.toString(),
-      user: order.user.toString(),
-      userDetails: user,
-      items:
-        order.items?.map((item: any) => ({
-          ...item,
-          productId: item.productId.toString(),
-          productDetails: productMap.get(item.productId.toString()),
-        })) || [],
-    } as Order
+    const data = await res.json();
+    return data;
   } catch (error) {
-    console.error("Error fetching order:", error)
-    return null
+    console.error("Error fetching order:", error);
+    return null;
   }
 }
+
+
 
 const statusColors = {
   PENDING: "bg-yellow-100 text-yellow-800",
@@ -67,9 +49,25 @@ const deliveryStatusColors = {
 }
 
 export default async function OrderDetailsPage({ params }: { params: { id: string } }) {
-  const order = await getOrderWithDetails(params.id)
-  if (!order) {
-    notFound()
+  const { id } = params
+
+  const { data: order, isLoading, isError } = useQuery({
+    queryKey: ["order", id],
+    queryFn: () => fetchOrderById(id),
+    enabled: !!id,
+  })
+
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        <Skeleton className="h-8 w-40 mb-4" />
+        <Skeleton className="h-32 w-full mb-6" />
+      </div>
+    )
+  }
+
+  if (isError || !order) {
+    return <p className="p-6 text-red-500">Failed to load order.</p>
   }
 
   return (
@@ -95,8 +93,8 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
                 <Badge
                   className={
                     order.paymentMethod === "cod"
-                      ? statusColors[order.paymentStatus] // use paymentStatus color
-                      : statusColors[order.status] // use order status color
+                      ? statusColors[order.paymentStatus as keyof typeof statusColors] // use paymentStatus color
+                      : statusColors[order.status as keyof typeof statusColors] // use order status color
                   }
                 >
                   {order.paymentMethod === "cod" ? order.paymentStatus : order.status}
@@ -119,7 +117,7 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">Delivery Status</div>
-                  <Badge className={`${deliveryStatusColors[order.deliveryStatus]} mt-1`}>
+                  <Badge className={`${deliveryStatusColors[order.deliveryStatus as keyof typeof deliveryStatusColors]} mt-1`}>
                     <Truck className="h-3 w-3 mr-1" />
                     {order.deliveryStatus}
                   </Badge>
@@ -161,28 +159,28 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
                 {order.items?.map((item: any, index: number) => (
                   <div key={index} className="flex items-center gap-4 p-4 border rounded-lg">
                     <Image
-                      src={item.productDetails?.imageUrl || "/placeholder.svg?height=60&width=60"}
-                      alt={item.productDetails?.productName || "Product"}
+                      src={item.productId?.imageUrl || "/placeholder.svg?height=60&width=60"}
+                      alt={item.productId?.productName || "Product"}
                       width={60}
                       height={60}
                       className="rounded-md object-cover"
                     />
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium truncate">
-                        {item.productDetails?.name || `Product ${item.productId}`}
+                        {item.productId?.name || `Product ${item.productId}`}
                       </h3>
                       <div className="text-sm text-muted-foreground">
-                        ₹{item.productDetails?.sellingPrice?.toFixed(2) || "0.00"} × {item.quantity}
+                        ₹{item.productId?.sellingPrice?.toFixed(2) || "0.00"} × {item.quantity}
                       </div>
-                      {item.productDetails?.category && (
+                      {item.productId?.category && (
                         <Badge variant="secondary" className="text-xs mt-1">
-                          {item.productDetails.category}
+                          {item.productId.category}
                         </Badge>
                       )}
                     </div>
                     <div className="text-right">
                       <div className="font-medium">
-                        ₹{((item.productDetails?.sellingPrice || 0) * item.quantity).toFixed(2)}
+                        ₹{((item.productId?.sellingPrice || 0) * item.quantity).toFixed(2)}
                       </div>
                       <div className="text-sm text-muted-foreground">Qty: {item.quantity}</div>
                     </div>

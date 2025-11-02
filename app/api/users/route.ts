@@ -1,8 +1,12 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { getDatabase } from "@/lib/mongodb"
+import { NextRequest, NextResponse } from "next/server"
+import mongoose from "mongoose"
+import User from "@/models/User" // we'll define this below
+import { getDatabase as connectDB} from "@/lib/mongodb" // connection helper
 
+// POST - Create new user
 export async function POST(request: NextRequest) {
   try {
+    await connectDB()
     const body = await request.json()
     const { email, cart = [] } = body
 
@@ -10,25 +14,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 })
     }
 
-    const db = await getDatabase()
-
-    // Check if user already exists
-    const existingUser = await db.collection("users").findOne({ email })
+    const existingUser = await User.findOne({ email })
     if (existingUser) {
       return NextResponse.json({ error: "User already exists" }, { status: 400 })
     }
 
-    const result = await db.collection("users").insertOne({
+    const user = await User.create({
       email,
       cart,
-      createdAt: new Date(),
-      updatedAt: new Date(),
     })
 
     return NextResponse.json(
       {
         success: true,
-        userId: result.insertedId,
+        userId: user._id,
       },
       { status: 201 },
     )
@@ -38,11 +37,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// GET - Fetch all users
 export async function GET() {
   try {
-    const db = await getDatabase()
-    const users = await db.collection("users").find({}).sort({ createdAt: -1 }).toArray()
-
+    await connectDB()
+    const users = await User.find({}).sort({ createdAt: -1 })
     return NextResponse.json(users)
   } catch (error) {
     console.error("Error fetching users:", error)

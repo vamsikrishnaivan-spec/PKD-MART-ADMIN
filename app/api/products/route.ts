@@ -1,8 +1,12 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { getDatabase } from "@/lib/mongodb"
+import { NextRequest, NextResponse } from "next/server"
+import mongoose from "mongoose"
+import { getDatabase as connectDB } from "@/lib/mongodb"
+import Product from "@/models/Product"
 
 export async function POST(request: NextRequest) {
   try {
+    await connectDB() // ✅ Ensure DB connection before using Mongoose
+
     const body = await request.json()
     const {
       upc,
@@ -29,9 +33,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Selling price must be greater than 0" }, { status: 400 })
     }
 
-    const db = await getDatabase()
+    // ✅ Check for duplicate UPC
+    const existingProduct = await Product.findOne({ upc })
+    if (existingProduct) {
+      return NextResponse.json({ error: "Product with this UPC already exists" }, { status: 409 })
+    }
 
-    const product = {
+    // ✅ Create new product
+    const newProduct = await Product.create({
       upc,
       name,
       brand: brand || "",
@@ -44,30 +53,27 @@ export async function POST(request: NextRequest) {
       sellingPrice: Number(sellingPrice),
       currency,
       imageUrl: imageUrl || "/assets/placeholder.webp",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
-
-    const result = await db.collection("products").insertOne(product)
+    })
 
     return NextResponse.json(
       {
         success: true,
-        productId: result.insertedId,
-        product,
+        productId: newProduct._id,
+        product: newProduct,
       },
-      { status: 201 },
+      { status: 201 }
     )
   } catch (error) {
     console.error("❌ Error creating product:", error)
-    return NextResponse.json({ error: `Error:-${error}` }, { status: 500 })
+    return NextResponse.json({ error: `Error: ${error}` }, { status: 500 })
   }
 }
 
 export async function GET() {
   try {
-    const db = await getDatabase()
-    const products = await db.collection("products").find({}).sort({ createdAt: -1 }).toArray()
+    await connectDB()
+    await import("@/models/Product") // ✅ ensure model is loaded
+    const products = await Product.find().sort({ createdAt: -1 })
     return NextResponse.json(products)
   } catch (error) {
     console.error("❌ Error fetching products:", error)

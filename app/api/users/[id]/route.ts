@@ -1,39 +1,19 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { getDatabase } from "@/lib/mongodb"
-import { ObjectId } from "mongodb"
+import { NextRequest, NextResponse } from "next/server"
+import mongoose from "mongoose"
+import { getDatabase as connectDB } from "@/lib/mongodb"
+import User from "@/models/User"
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    const { id } = params
-
-    if (!ObjectId.isValid(id)) {
-      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 })
-    }
-
-    const db = await getDatabase()
-    const result = await db.collection("users").deleteOne({ _id: new ObjectId(id) })
-
-    if (result.deletedCount === 0) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 })
-    }
-
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error("Error deleting user:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
-  }
-}
-
+// GET - Get user by ID
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    await connectDB()
     const { id } = params
 
-    if (!ObjectId.isValid(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: "Invalid user ID" }, { status: 400 })
     }
 
-    const db = await getDatabase()
-    const user = await db.collection("users").findOne({ _id: new ObjectId(id) })
+    const user = await User.findById(id)
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
@@ -46,51 +26,64 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
+// PUT - Update user by ID
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    await connectDB()
     const { id } = params
     const body = await request.json()
+    const { email, cart } = body
 
-    if (!ObjectId.isValid(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: "Invalid user ID" }, { status: 400 })
     }
-
-    const { email, cart } = body
 
     if (!email) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 })
     }
 
-    const db = await getDatabase()
-
-    // Check if email is already taken by another user
-    const existingUser = await db.collection("users").findOne({
-      email,
-      _id: { $ne: new ObjectId(id) },
-    })
-
+    // Check for duplicate email in another user
+    const existingUser = await User.findOne({ email, _id: { $ne: id } })
     if (existingUser) {
       return NextResponse.json({ error: "Email already exists" }, { status: 400 })
     }
 
-    const result = await db.collection("users").updateOne(
-      { _id: new ObjectId(id) },
-      {
-        $set: {
-          email,
-          cart: cart || [],
-          updatedAt: new Date(),
-        },
-      },
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { email, cart: cart || [] },
+      { new: true },
     )
 
-    if (result.matchedCount === 0) {
+    if (!updatedUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 })
+    }
+
+    return NextResponse.json({ success: true, user: updatedUser })
+  } catch (error) {
+    console.error("Error updating user:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}
+
+// DELETE - Delete user by ID
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    await connectDB()
+    const { id } = params
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 })
+    }
+
+    const deletedUser = await User.findByIdAndDelete(id)
+
+    if (!deletedUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Error updating user:", error)
+    console.error("Error deleting user:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
