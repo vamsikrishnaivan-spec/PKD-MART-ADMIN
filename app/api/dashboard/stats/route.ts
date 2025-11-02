@@ -22,11 +22,11 @@ export async function GET() {
         .catch(() => 0),
       db
         .collection("orders")
-        .countDocuments({ status: "PENDING" })
+        .countDocuments({ DELIVERED: "PENDING" })
         .catch(() => 0),
       db
         .collection("orders")
-        .countDocuments({ status: "PAID" })
+        .countDocuments({ deliveryStatus: "DELIVERED" })
         .catch(() => 0),
       db
         .collection("orders")

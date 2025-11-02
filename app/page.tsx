@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Badge } from "@/components/ui/badge"
@@ -17,6 +18,9 @@ import {
   AlertCircle,
 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { fetchOrders } from "./orders/page"
+import OrdersMap from "@/components/OrdersMap"
+import { OrdersList } from "@/components/orders-list"
 
 async function fetchDashboardStats() {
 
@@ -38,6 +42,7 @@ async function fetchDashboardStats() {
 }
 
 export default function Dashboard() {
+  const [filters, setFilters] = useState({})
   const {
     data: stats,
     isLoading,
@@ -50,6 +55,15 @@ export default function Dashboard() {
     refetchOnWindowFocus: true,
     retry: 3,
     retryDelay: 1000,
+  })
+  const {
+    data: orders = [],
+    isLoading: isOrdersLoading,
+    error: ordersError,
+    isError: isOrdersError
+  } = useQuery({
+    queryKey: ["orders", filters],
+    queryFn: () => fetchOrders(filters),
   })
 
 
@@ -84,16 +98,16 @@ export default function Dashboard() {
       change: "+23%",
       changeType: "positive" as const,
     },
-    {
-      title: "Pending Orders",
-      value: stats?.pendingOrders || 0,
-      icon: Clock,
-      color: "from-orange-500 to-orange-600",
-      bgColor: "bg-orange-50",
-      textColor: "text-orange-700",
-      change: "-5%",
-      changeType: "negative" as const,
-    },
+    // {
+    //   title: "Pending Orders",
+    //   value: stats?.pendingOrders || 0,
+    //   icon: Clock,
+    //   color: "from-orange-500 to-orange-600",
+    //   bgColor: "bg-orange-50",
+    //   textColor: "text-orange-700",
+    //   change: "-5%",
+    //   changeType: "negative" as const,
+    // },
     {
       title: "Paid Orders",
       value: stats?.paidOrders || 0,
@@ -115,6 +129,7 @@ export default function Dashboard() {
       changeType: "positive" as const,
     },
   ]
+  const pendingOrders= orders.filter((o: any) => o.deliveryStatus === "PROCESSING")
 
   return (
     <div className="p-6 space-y-6">
@@ -153,44 +168,67 @@ export default function Dashboard() {
         </Alert>
       )}
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {statCards.map((stat) => (
-          <Card key={stat.title} className="border-0 shadow-sm hover:shadow-md transition-all duration-200 bg-white">
-            <CardContent className="p-6">
-              {isLoading ? (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-8 w-8 rounded-lg" />
-                  </div>
-                  <Skeleton className="h-8 w-16" />
-                  <Skeleton className="h-4 w-12" />
-                </div>
-              ) : (
-                <>
-                  <div className="flex items-center justify-between mb-4">
-                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                    <div className={`p-2 rounded-lg ${stat.bgColor}`}>
-                      <stat.icon className={`h-5 w-5 ${stat.textColor}`} />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-3xl font-bold text-gray-900">{stat.value.toLocaleString()}</p>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={stat.changeType === "positive" ? "default" : "destructive"} className="text-xs">
-                        <TrendingUp className="h-3 w-3 mr-1" />
-                        {stat.change}
-                      </Badge>
-                      <span className="text-xs text-gray-500">vs last month</span>
-                    </div>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+<div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  {statCards.map((stat) => (
+    <Card
+      key={stat.title}
+      className="border-0 shadow-sm hover:shadow-md transition-all duration-200 bg-white"
+    >
+      <CardContent className="p-6">
+        {isLoading ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-8 w-8 rounded-lg" />
+            </div>
+            <Skeleton className="h-8 w-16" />
+            <Skeleton className="h-4 w-12" />
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+              <div className={`p-2 rounded-lg ${stat.bgColor}`}>
+                <stat.icon className={`h-5 w-5 ${stat.textColor}`} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <p className="text-3xl font-bold text-gray-900">
+                {stat.value.toLocaleString()}
+              </p>
+              <div className="flex items-center gap-2">
+                <Badge
+                  variant={stat.changeType === "positive" ? "default" : "destructive"}
+                  className="text-xs"
+                >
+                  <TrendingUp className="h-3 w-3 mr-1" />
+                  {stat.change}
+                </Badge>
+                <span className="text-xs text-gray-500">vs last month</span>
+              </div>
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  ))}
+</div>
+
+      {/* Orders List */}
+      <Card className="border-0 shadow-sm bg-white">
+        <CardHeader className="border-b border-gray-100">
+          <CardTitle className="text-xl font-semibold text-gray-900">
+            All Orders ({isOrdersLoading ? "..." : pendingOrders.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <OrdersList orders={pendingOrders} isLoading={isOrdersLoading} error={ordersError} />
+        </CardContent>
+      </Card>
+
+      <OrdersMap orders={pendingOrders} />
+
+      
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

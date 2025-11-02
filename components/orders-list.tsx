@@ -121,8 +121,11 @@ export function OrdersList({ orders, isLoading, error }: OrdersListProps) {
       {/* Mobile View */}
       <div className="block md:hidden space-y-3 p-4">
         {sortedOrders.map((order) => {
-          const displayStatus =
-            order.paymentMethod === "COD" ? order.paymentStatus : order.status
+          const displayStatus =order.deliveryStatus?.toUpperCase() === "DELIVERED"
+          ? "PAID"
+          : order.paymentMethod === "COD"
+          ? order.paymentStatus
+          : order.status;
           return (
             <Card key={order._id?.toString()} className="border border-gray-100 hover:shadow-sm transition-shadow">
               <CardContent className="p-4">
@@ -137,7 +140,9 @@ export function OrdersList({ orders, isLoading, error }: OrdersListProps) {
                   <div className="text-right">
                     <div className="font-bold text-gray-900">₹{order.totalAmount?.toFixed(2)}</div>
                     <Badge className={`${statusColors[displayStatus]} text-xs mt-1`}>
-                      {displayStatus}
+                      {order.deliveryStatus?.toUpperCase() === "DELIVERED"
+                        ? "PAID"
+                        : displayStatus}
                     </Badge>
                   </div>
                 </div>
@@ -202,8 +207,11 @@ export function OrdersList({ orders, isLoading, error }: OrdersListProps) {
           </TableHeader>
           <TableBody>
             {sortedOrders.map((order) => {
-              const displayStatus =
-                order.paymentMethod === "COD" ? order.paymentStatus : order.status
+              const displayStatus =order.deliveryStatus?.toUpperCase() === "DELIVERED"
+              ? "PAID"
+              : order.paymentMethod === "COD"
+              ? order.paymentStatus
+              : order.status;
               return (
                 <TableRow key={order._id?.toString()} className="border-gray-100 hover:bg-gray-50/50">
                   <TableCell className="font-mono text-sm">#{order.transactionId?.slice(-8)}</TableCell>
