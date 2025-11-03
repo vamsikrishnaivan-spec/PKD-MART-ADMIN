@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getDatabase } from "@/lib/mongodb"
 import AdminUser from "@/models/AdminUser"
-import bcrypt from "bcrypt"
+import bcrypt from "bcryptjs"
 
 export async function GET() {
   try {

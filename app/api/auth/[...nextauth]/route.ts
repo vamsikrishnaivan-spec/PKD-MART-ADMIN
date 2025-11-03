@@ -2,7 +2,7 @@ import NextAuth, { type NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { getDatabase } from "@/lib/mongodb"
 import AdminUser from "@/models/AdminUser"
-import bcrypt from "bcrypt"
+import bcrypt from "bcryptjs"
 
 export const authOptions: NextAuthOptions = {
   providers: [
