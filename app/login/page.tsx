@@ -31,7 +31,7 @@ export default function LoginPage() {
       toast.error(res.error || "Invalid credentials")
     } else {
       toast.success("Login successful!")
-      router.push("/") // ✅ redirect to admin dashboard
+      router.replace("/dashboard") // ✅ redirect to admin dashboard
     }
   }
 
