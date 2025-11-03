@@ -18,7 +18,22 @@ export async function POST(req: Request) {
   try {
     await getDatabase()
     const body = await req.json()
-    const { name, email, password, role } = body
+    const { name, email, password, role, createdBy } = body
+    if (!name || !email || !password || !createdBy) {
+      return NextResponse.json({ message: "Missing required fields" }, { status: 400 })
+    }
+
+    // Verify creator
+    const creator = await AdminUser.findOne({ email: createdBy })
+    if (!creator || creator.role !== "superadmin") {
+      return NextResponse.json(
+        { message: "Unauthorized: Only Super Admins can create new users" },
+        { status: 403 }
+      )
+    }
+    if(role==="superadmin"){
+      return NextResponse.json({ message: "only super admin can create user" }, { status: 400 })
+    }
 
     if (!name || !email || !password) {
       return NextResponse.json({ message: "Missing required fields" }, { status: 400 })

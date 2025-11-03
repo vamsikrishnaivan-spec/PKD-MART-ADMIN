@@ -7,6 +7,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { Toaster } from "sonner"
 import { QueryProvider } from "@/components/query-provider"
 import PwaInstallButton from "@/components/PwaInstallButton"
+import { ClientProviders } from "@/components/ClientProviders"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -24,6 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className={`${inter.className} h-full bg-gray-50`}>
+      <ClientProviders>
         <QueryProvider>
           <SidebarProvider>
             <div className="flex min-h-screen w-full bg-gray-50">
@@ -38,6 +40,7 @@ export default function RootLayout({
             />
           </SidebarProvider>
         </QueryProvider>
+        </ClientProviders>
       </body>
     </html>
   )
