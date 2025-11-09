@@ -9,6 +9,24 @@ import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Loader2 } from "lucide-react"
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "./ui/select";
+
+const categories = [
+  "vegetables",
+  "fruits",
+  "dairy",
+  "essentials",
+  "snacks",
+  "instant-food"
+];
+
+type Category = typeof categories[number];
 
 async function createProduct(data: any) {
   const response = await fetch("/api/products", {
@@ -53,6 +71,7 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
     description: initialData?.description || "",
     mrp: initialData?.mrp?.toString() || "",
     sellingPrice: initialData?.sellingPrice?.toString() || "",
+    costPrice: initialData?.costPrice?.toString() || "",
     currency: initialData?.currency || "INR",
     imageUrl: initialData?.imageUrl || "",
   })
@@ -84,6 +103,7 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
           description: "",
           mrp: "",
           sellingPrice: "",
+          costPrice: "",
           currency: "INR",
           imageUrl: "",
         })
@@ -138,8 +158,8 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
       setLoadingUPC(false)
     }
   }
-   // 📸 Handle Image Upload to Cloudinary
-   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // 📸 Handle Image Upload to Cloudinary
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -184,7 +204,7 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
       {/* UPC Autofill Section */}
       <div className="flex gap-2 items-end">
         <div className="flex-1">
-          <Label htmlFor="upc">UPC *</Label>
+          <Label htmlFor="upc">UPC <span style={{ color: "red" }}>*</span></Label>
           <Input
             id="upc"
             type="text"
@@ -202,7 +222,7 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
       {/* Product Fields */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label>Name</Label>
+          <Label>Name <span style={{ color: "red" }}>*</span></Label>
           <Input value={formData.name} onChange={(e) => handleInputChange("name", e.target.value)} />
         </div>
         <div>
@@ -218,9 +238,25 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
           <Input value={formData.model} onChange={(e) => handleInputChange("model", e.target.value)} />
         </div>
         <div>
-          <Label>Category</Label>
-          <Input value={formData.category} onChange={(e) => handleInputChange("category", e.target.value)} />
+          <Label>Category <span style={{ color: "red" }}>*</span></Label>
+          <Select
+            value={formData.category}
+            onValueChange={(value) => handleInputChange("category", value as Category)}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((cat) => (
+                <SelectItem key={cat} value={cat}>
+                  {cat.charAt(0).toUpperCase() + cat.slice(1).replace("-", " ")}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
         </div>
+
         <div>
           <Label>Subcategory</Label>
           <Input value={formData.subcategory} onChange={(e) => handleInputChange("subcategory", e.target.value)} />
@@ -239,11 +275,20 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
           />
         </div>
         <div>
-          <Label>Selling Price (₹)</Label>
+          <Label>Selling Price (₹)<span style={{ color: "red" }}>*</span></Label>
           <Input
             type="number"
             value={formData.sellingPrice}
             onChange={(e) => handleInputChange("sellingPrice", e.target.value)}
+            placeholder="e.g. 80"
+          />
+        </div>
+        <div>
+          <Label>Cost Price (₹)</Label>
+          <Input
+            type="number"
+            value={formData.costPrice}
+            onChange={(e) => handleInputChange("costPrice", e.target.value)}
             placeholder="e.g. 80"
           />
         </div>

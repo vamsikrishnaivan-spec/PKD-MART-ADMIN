@@ -61,6 +61,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const {
       name,
       sellingPrice,
+      costPrice,
       imageUrl,
       category,
       model,
@@ -91,6 +92,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         $set: {
           name,
           sellingPrice: Number(sellingPrice),
+          costPrice: costPrice ? Number(costPrice) : null,
           imageUrl,
           category,
           updatedAt: new Date(),

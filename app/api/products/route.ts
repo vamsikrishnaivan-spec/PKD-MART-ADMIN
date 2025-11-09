@@ -19,24 +19,25 @@ export async function POST(request: NextRequest) {
       description,
       mrp,
       sellingPrice,
+      costPrice,
       currency,
       imageUrl,
     } = body
 
     // ✅ Validate required fields
     if (!upc || !name || !category || !sellingPrice || !currency) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+      return NextResponse.json({ error: "Missing required fields", message: "Missing required fields"}, { status: 400 })
     }
 
     // ✅ Price validation
-    if (sellingPrice <= 0) {
-      return NextResponse.json({ error: "Selling price must be greater than 0" }, { status: 400 })
+    if (sellingPrice <= 0 || costPrice <= 0) {
+      return NextResponse.json({ error: "Selling or cost price must be greater than 0", message: "Selling or cost price must be greater than 0"}, { status: 400 })
     }
 
     // ✅ Check for duplicate UPC
     const existingProduct = await Product.findOne({ upc })
     if (existingProduct) {
-      return NextResponse.json({ error: "Product with this UPC already exists" }, { status: 409 })
+      return NextResponse.json({ error: "Product with this UPC already exists", message: "Product with this UPC already exists"}, { status: 409 })
     }
 
     // ✅ Create new product
@@ -51,6 +52,7 @@ export async function POST(request: NextRequest) {
       description: description || "",
       mrp: mrp ? Number(mrp) : null,
       sellingPrice: Number(sellingPrice),
+      costPrice: costPrice ? Number(costPrice) : null,
       currency,
       imageUrl: imageUrl || "/assets/placeholder.webp",
     })
@@ -65,7 +67,7 @@ export async function POST(request: NextRequest) {
     )
   } catch (error) {
     console.error("❌ Error creating product:", error)
-    return NextResponse.json({ error: `Error: ${error}` }, { status: 500 })
+    return NextResponse.json({ error: `Error: ${error}`, message: "Internal server error" }, { status: 500 })
   }
 }
 
