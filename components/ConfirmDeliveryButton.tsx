@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Button, Input } from "@/components/ui/button" // replace Input with your input component if different
+import { Button, } from "@/components/ui/button" // replace Input with your input component if different
 import { useToast } from "@/hooks/use-toast"
 
 export default function ConfirmDeliveryWithOtp({ orderId, deliveryStatus }: { orderId: string, deliveryStatus: string }) {
@@ -40,7 +40,7 @@ export default function ConfirmDeliveryWithOtp({ orderId, deliveryStatus }: { or
       } else {
         toast({
           title: "Error",
-          description: error instanceof Error ? data.message : `Failed: ${data.message || "Invalid OTP"}`,
+          description: `Failed: ${data.message || "Invalid OTP"}`,
           variant: "destructive",
         })
       }

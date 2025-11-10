@@ -37,10 +37,7 @@ export interface IOrder extends Document {
   orderType: "quick" | "scheduled";
   deliverySlot?: string | null;
   deliveryAddress: IDeliveryAddress;
-  otpHash?: string | null;
-
-  generateOtp(): Promise<string | null>;
-  verifyOtp(otp: string): Promise<{ success: boolean; message: string }>;
+  otp?: string | null;
 }
 
 // ✅ Define Delivery Address Schema
@@ -109,7 +106,7 @@ const OrderSchema = new Schema<IOrder>(
       },
     },
     deliveryAddress: { type: DeliveryAddressSchema, required: true },
-    otpHash: { type: String, default: null },
+    otp: { type: String, default: null },
   },
   { timestamps: true }
 );
@@ -135,34 +132,18 @@ OrderSchema.pre<IOrder>("save", async function (next) {
 
 // ✅ Instance methods
 
-OrderSchema.methods.generateOtp = async function (): Promise<string | null> {
-  if (this.deliveryStatus === "DELIVERED") return null;
 
-  const otp = Math.floor(1000 + Math.random() * 9000).toString();
-  const otpHash = crypto
-    .createHmac("sha256", process.env.OTP_SECRET_KEY || "default_key")
-    .update(otp)
-    .digest("hex");
-
-  this.otpHash = otpHash;
-  await this.save();
-
-  return otp;
-};
 
 OrderSchema.methods.verifyOtp = async function (
   otp: string
 ): Promise<{ success: boolean; message: string }> {
-  const otpHash = crypto
-    .createHmac("sha256", process.env.OTP_SECRET_KEY || "default_key")
-    .update(otp)
-    .digest("hex");
+  
 
-  if (this.otpHash !== otpHash) {
+  if (this.otp !== otp) {
     return { success: false, message: "Invalid or expired OTP" };
   }
 
-  this.otpHash = null;
+  this.otp = null;
   await this.save();
 
   return { success: true, message: "OTP verified successfully" };
