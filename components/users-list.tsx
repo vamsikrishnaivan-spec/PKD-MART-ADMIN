@@ -4,8 +4,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Mail, ShoppingCart, Calendar } from "lucide-react"
+import { Mail, ShoppingCart, Calendar, MapPin } from "lucide-react"
 import type { User as UserType } from "@/lib/types"
+import { AddressMap } from "./AddressMap"
 
 interface UsersListProps {
   users: UserType[]
@@ -31,9 +32,9 @@ export function UsersList({ users, isLoading, error }: UsersListProps) {
             <Card key={i} className="border border-gray-100">
               <CardContent className="p-4">
                 <div className="space-y-3">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
-                  <Skeleton className="h-4 w-1/4" />
+                  <Skeleton className="h-24 w-3/4" />
+                  <Skeleton className="h-24 w-1/2" />
+                  <Skeleton className="h-24 w-1/4" />
                 </div>
               </CardContent>
             </Card>
@@ -117,6 +118,26 @@ export function UsersList({ users, isLoading, error }: UsersListProps) {
                   <span>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}</span>
                 </div>
               </div>
+              {user.addresses?.length > 0 ? (
+  <div className="space-y-3 mt-3 text-xs text-gray-600">
+    <div className="flex items-center gap-1 text-gray-700 font-medium">
+      <MapPin className="h-3 w-3 text-blue-500" />
+      <span>Addresses:</span>
+    </div>
+
+    {user.addresses.map((addr, idx) => (
+      <div key={idx} className="border rounded-md p-3 bg-gray-50">
+        <p className="text-gray-700 font-medium">{addr.label}</p>
+        <p>{addr.formattedAddress}</p>
+
+        <AddressMap lat={addr.lat} lng={addr.lng} />
+      </div>
+    ))}
+  </div>
+) : (
+  <p className="text-xs text-gray-400 mt-2">No addresses available</p>
+)}
+
             </CardContent>
           </Card>
         ))}

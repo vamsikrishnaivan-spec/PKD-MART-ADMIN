@@ -9,6 +9,7 @@ export interface User {
   _id?: ObjectId | string
   email: string
   cart: CartItem[]
+  addresses: DeliveryAddress[]
   createdAt?: Date
   updatedAt?: Date
 }
