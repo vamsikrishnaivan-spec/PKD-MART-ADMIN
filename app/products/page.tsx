@@ -5,9 +5,11 @@ import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Input } from "@/components/ui/input"    // ⬅️ Add this
+import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { ProductsList } from "@/components/products-list"
-import { Plus, Package, DollarSign, Tag } from "lucide-react"
+import { Plus, Package, Tag } from "lucide-react"
 import Link from "next/link"
 
 async function fetchProducts() {
@@ -19,6 +21,8 @@ async function fetchProducts() {
 }
 
 export default function ProductsPage() {
+  const [search, setSearch] = useState("")   // ⬅️ Search state
+
   const {
     data: products = [],
     isLoading,
@@ -28,7 +32,16 @@ export default function ProductsPage() {
     queryFn: fetchProducts,
   })
 
-  const totalValue = products.reduce((sum: number, product: any) => sum + (product.sellingPrice || 0), 0)
+  // ⬅️ Filter products by search
+  const filteredProducts = products.filter((p: any) =>
+    p.name?.toLowerCase().includes(search.toLowerCase())
+  )
+
+  const totalValue = products.reduce(
+    (sum: number, product: any) => sum + (product.sellingPrice || 0),
+    0
+  )
+
   const categories = [...new Set(products.map((p: any) => p.category))].length
 
   return (
@@ -76,21 +89,16 @@ export default function ProductsPage() {
             </div>
           </CardContent>
         </Card>
+
         <Card className="border-0 shadow-sm bg-white">
           <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              {/* <div className="p-2 bg-green-50 rounded-lg">
-                // <DollarSign className="h-5 w-5 text-green-600" />
-              </div> */}
-              <div>
-                <p className="text-sm text-gray-600">Total Value</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {isLoading ? <Skeleton className="h-6 w-16" /> : `₹${totalValue.toFixed(2)}`}
-                </p>
-              </div>
-            </div>
+            <p className="text-sm text-gray-600">Total Value</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {isLoading ? <Skeleton className="h-6 w-16" /> : `₹${totalValue.toFixed(2)}`}
+            </p>
           </CardContent>
         </Card>
+
         <Card className="border-0 shadow-sm bg-white">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -108,15 +116,34 @@ export default function ProductsPage() {
         </Card>
       </div>
 
+      {/* Search Bar */}
+      <Card className="border-0 shadow-sm bg-white">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Search Products</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Input
+            placeholder="Search by name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full"
+          />
+        </CardContent>
+      </Card>
+
       {/* Products List */}
       <Card className="border-0 shadow-sm bg-white">
         <CardHeader className="border-b border-gray-100">
           <CardTitle className="text-xl font-semibold text-gray-900">
-            All Products ({isLoading ? "..." : products.length})
+            All Products ({isLoading ? "..." : filteredProducts.length})
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <ProductsList products={products} isLoading={isLoading} error={error} />
+          <ProductsList
+            products={filteredProducts}
+            isLoading={isLoading}
+            error={error}
+          />
         </CardContent>
       </Card>
     </div>
