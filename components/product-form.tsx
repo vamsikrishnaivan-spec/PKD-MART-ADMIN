@@ -23,7 +23,9 @@ const categories = [
   "dairy",
   "essentials",
   "snacks",
-  "instant-food"
+  "instant-food",
+  "fast-food",
+  "break fast"
 ];
 
 type Category = typeof categories[number];
