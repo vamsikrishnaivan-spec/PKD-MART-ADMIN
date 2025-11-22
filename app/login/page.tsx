@@ -29,10 +29,25 @@ export default function LoginPage() {
 
     if (res?.error) {
       toast.error(res.error || "Invalid credentials")
-    } else {
-      toast.success("Login successful!")
-      router.replace("/dashboard") // ✅ redirect to admin dashboard
+      return
     }
+
+    // 🔥 1) Fetch user from backend (next-auth does not return full user)
+    const userRes = await fetch("/api/auth/me")
+    const userData = await userRes.json()
+
+    if (!userData?.user?._id) {
+      toast.error("Login error: user data missing")
+      return
+    }
+
+    // 🔥 2) Save user to localStorage (used by PushSubscribeButton)
+    localStorage.setItem("adminUser", JSON.stringify(userData.user))
+
+    
+
+    toast.success("Login successful!")
+    router.replace("/dashboard")
   }
 
   return (

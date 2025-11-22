@@ -21,6 +21,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { fetchOrders } from "../orders/page"
 import OrdersMap from "@/components/OrdersMap"
 import { OrdersList } from "@/components/orders-list"
+import PushSubscribeButton from "@/components/PushSubscribeButton"
 
 async function fetchDashboardStats() {
 
@@ -168,6 +169,7 @@ export default function Dashboard() {
         </Alert>
       )}
 
+
 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-6">
   {statCards.map((stat) => (
     <Card
@@ -287,6 +289,7 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
+        <PushSubscribeButton />
       </div>
     </div>
   )

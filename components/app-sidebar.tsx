@@ -1,7 +1,7 @@
 "use client"
 
 import { BarChart3, Package, ShoppingCart, Users, Home, TrendingUp } from "lucide-react"
-
+import { useSession, signOut } from "next-auth/react"
 import {
   Sidebar,
   SidebarContent,
@@ -49,6 +49,7 @@ const menuItems = [
 ]
 
 export function AppSidebar() {
+  const { data: session } = useSession()
   const pathname = usePathname()
 
   return (
@@ -97,6 +98,18 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              {session ? (
+          <button
+            className="text-sm text-red-500"
+            onClick={() => signOut({ callbackUrl: "/login" })}
+          >
+            Logout
+          </button>
+        ) : (
+          <Link href="/login" className="text-sm text-blue-600">
+            Login
+          </Link>
+        )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
