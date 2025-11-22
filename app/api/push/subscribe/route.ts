@@ -7,9 +7,14 @@ export async function POST(req: Request) {
 
   const { userId, subscription, browser, device } = await req.json()
 
-  // Prevent duplicates
+  if (!subscription || !subscription.endpoint) {
+    return NextResponse.json({ success: false, error: "Invalid subscription" }, { status: 400 })
+  }
+
+  // Prevent duplicates for same user
   const exists = await PushSubscription.findOne({
-    endpoint: subscription.endpoint,
+    userId,
+    endpoint: subscription.endpoint
   })
 
   if (!exists) {
