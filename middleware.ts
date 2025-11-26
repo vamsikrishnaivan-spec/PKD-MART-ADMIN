@@ -8,7 +8,7 @@ export default withAuth({
 
 export const config = {
   matcher: [
-    "/((?!login|api/auth|manifest.json|sw.js|icons/|_next/).*)",
+    "/((?!login|api/auth|api/notifications/push-all|manifest.json|sw.js|icons/|_next/).*)",
   ],
 }
 
