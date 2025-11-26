@@ -4,8 +4,8 @@ self.addEventListener("push", function (event) {
   let payload = { 
     title: "New Notification", 
     body: "You have a new message", 
-    icon: "/PKDMart.png",
-    badge: "/PKDMart.png",
+    icon: "/icons/pkdmart-192.png",
+    badge: "/icons/pkdmart-96.png",
     data: {}
   }
 
@@ -21,8 +21,8 @@ self.addEventListener("push", function (event) {
 
   const options = {
     body: payload.body,
-    icon: payload.icon || "/icons/icon-192.png",     // 🔥 proper notification icon
-    badge: payload.badge || "/icons/badge-72.png",   // 🔥 status bar icon
+    icon: payload.icon || "/icons/pkdmart-192.png",     // 🔥 proper notification icon
+    badge: payload.badge || "/icons/pkdmart-96.png",   // 🔥 status bar icon
     vibrate: [200, 100, 200],                        // 🔥 shows vibration popup
     requireInteraction: true,                        // 🔥 keeps notification visible
     renotify: true,
