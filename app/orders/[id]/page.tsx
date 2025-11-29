@@ -187,6 +187,35 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
                   </div>
                 )) || <div className="text-center py-8 text-muted-foreground">No items in this order</div>}
               </div>
+
+                {/* If photoUrl exists, show the uploaded image */}
+              {order.photoUrl && (
+                <div className="p-4 border rounded-lg flex items-start gap-4 mt-4">
+                  <Image
+                    src={order.photoUrl}
+                    alt="Uploaded Preview"
+                    width={120}
+                    height={120}
+                    className="rounded-md object-cover"
+                  />
+                  <div>
+                    <h3 className="font-medium">Uploaded Image</h3>
+                    <p className="text-sm text-muted-foreground">groceries list image.</p>
+                  </div>
+                </div>
+              )}
+
+              {/* If notes exist, show the typed notes */}
+              {order.notes && order.notes.trim() !== "" && (
+                <div className="p-4 border rounded-lg mt-4 bg-gray-50">
+                  <h3 className="font-medium mb-1">Customer groceries list notes</h3>
+                  <p className="text-sm text-muted-foreground whitespace-pre-line">
+                    {order.notes}
+                  </p>
+                </div>
+              )}
+
+
             </CardContent>
           </Card>
         </div>
