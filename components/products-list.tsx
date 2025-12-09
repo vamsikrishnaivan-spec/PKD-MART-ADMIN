@@ -75,6 +75,34 @@ export function ProductsList({ products, isLoading, error }: ProductsListProps) 
     },
   })
 
+  // PATCH status
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+      const res = await fetch(`/api/products/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      })
+      if (!res.ok) throw new Error("Failed to update status")
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] })
+      toast({
+        title: "Status Updated",
+        description: "Product status changed successfully",
+      })
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update status",
+        variant: "destructive",
+      })
+    },
+  })
+
+
   const handleDelete = (id: string) => {
     setDeletingId(id)
     deleteMutation.mutate(id)
@@ -192,8 +220,43 @@ export function ProductsList({ products, isLoading, error }: ProductsListProps) 
               <div className="text-xs text-gray-500 mb-3">
                 Created: {product.createdAt ? new Date(product.createdAt).toLocaleDateString() : "N/A"}
               </div>
+              <div className="flex items-center gap-2 mb-2">
+                {/* Status Badge */}
+                <Badge
+                  className={
+                    product.status === 1
+                      ? "bg-green-100 text-green-800 text-xs"
+                      : "bg-red-100 text-red-800 text-xs"
+                  }
+                >
+                  {product.status === 1 ? "Active" : "Inactive"}
+                </Badge>
+
+                {/* Toggle Status Button */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className={
+                    product.status === 1
+                      ? "border-red-200 text-red-600 hover:bg-red-50"
+                      : "border-green-200 text-green-600 hover:bg-green-50"
+                  }
+                  disabled={updateStatusMutation.isPending}
+                  onClick={() =>
+                    updateStatusMutation.mutate({
+                      id: product._id.toString(),
+                      status: product.status === 1 ? 0 : 1,
+                    })
+                  }
+                >
+                  {product.status === 1 ? "Disable" : "Enable"}
+                </Button>
+              </div>
+
 
               <div className="flex gap-2">
+
+
                 <Button
                   variant="outline"
                   size="sm"
@@ -284,6 +347,36 @@ export function ProductsList({ products, isLoading, error }: ProductsListProps) 
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
+                    {/* Status Badge */}
+                    <Badge
+                      className={
+                        product.status === 1
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }
+                    >
+                      {product.status === 1 ? "Active" : "Inactive"}
+                    </Badge>
+
+                    {/* Toggle Status Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={
+                        product.status === 1
+                          ? "border-red-200 text-red-700 hover:bg-red-50"
+                          : "border-green-200 text-green-700 hover:bg-green-50"
+                      }
+                      disabled={updateStatusMutation.isPending}
+                      onClick={() =>
+                        updateStatusMutation.mutate({
+                          id: product._id.toString(),
+                          status: product.status === 1 ? 0 : 1,
+                        })
+                      }
+                    >
+                      {product.status === 1 ? "Disable" : "Enable"}
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"

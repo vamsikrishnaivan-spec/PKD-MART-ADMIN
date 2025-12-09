@@ -12,8 +12,8 @@ const ProductSchema = new mongoose.Schema(
     model: { type: String, default: null },
     description: { type: String, default: "" },
     mrp: { type: Number, default: null },
-    sellingPrice: { 
-      type: Number, 
+    sellingPrice: {
+      type: Number,
       required: true,
       validate: {
         validator: function (value: number): boolean {
@@ -21,11 +21,12 @@ const ProductSchema = new mongoose.Schema(
           return this.costPrice == null || value >= this.costPrice;
         },
         message: 'Selling price must be greater than or equal to cost price'
-      }      
+      }
     },
     costPrice: { type: Number, default: null },
     currency: { type: String, default: "INR" },
     imageUrl: { type: String, required: true },
+    status: { type: Number, enum: [0, 1], default: 1 },
   },
   { timestamps: true }
 )

@@ -30,6 +30,7 @@ export interface Product {
   imageUrl: string
   createdAt: string
   updatedAt: string
+  status: number
 }
 
 
@@ -61,7 +62,7 @@ export interface Order {
   createdAt?: Date
   updatedAt?: Date
   orderType?: string
-  deliverySlot:string
+  deliverySlot: string
 }
 
 export interface DashboardStats {

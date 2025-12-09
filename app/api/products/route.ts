@@ -26,18 +26,18 @@ export async function POST(request: NextRequest) {
 
     // ✅ Validate required fields
     if (!upc || !name || !category || !sellingPrice || !currency) {
-      return NextResponse.json({ error: "Missing required fields", message: "Missing required fields"}, { status: 400 })
+      return NextResponse.json({ error: "Missing required fields", message: "Missing required fields" }, { status: 400 })
     }
 
     // ✅ Price validation
     if (sellingPrice <= 0 || costPrice <= 0) {
-      return NextResponse.json({ error: "Selling or cost price must be greater than 0", message: "Selling or cost price must be greater than 0"}, { status: 400 })
+      return NextResponse.json({ error: "Selling or cost price must be greater than 0", message: "Selling or cost price must be greater than 0" }, { status: 400 })
     }
 
     // ✅ Check for duplicate UPC
     const existingProduct = await Product.findOne({ upc })
     if (existingProduct) {
-      return NextResponse.json({ error: "Product with this UPC already exists", message: "Product with this UPC already exists"}, { status: 409 })
+      return NextResponse.json({ error: "Product with this UPC already exists", message: "Product with this UPC already exists" }, { status: 409 })
     }
 
     // ✅ Create new product
