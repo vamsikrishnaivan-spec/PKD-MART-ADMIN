@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import ConfirmDeliveryButton from "@/components/ConfirmDeliveryButton"
+import CancelOrderButton from "@/components/CancelOrderButton"
 import { Badge } from "@/components/ui/badge"
 import { getDatabase } from "@/lib/mongodb"
 import type { Order } from "@/lib/types"
@@ -46,6 +47,7 @@ const deliveryStatusColors = {
   PROCESSING: "bg-blue-100 text-blue-800",
   DISPATCHED: "bg-orange-100 text-orange-800",
   DELIVERED: "bg-green-100 text-green-800",
+  CANCELLED: "bg-red-100 text-red-800",
 }
 
 export default async function OrderDetailsPage({ params }: { params: { id: string } }) {
@@ -188,7 +190,7 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
                 )) || <div className="text-center py-8 text-muted-foreground">No items in this order</div>}
               </div>
 
-                {/* If photoUrl exists, show the uploaded image */}
+              {/* If photoUrl exists, show the uploaded image */}
               {order.photoUrl && (
                 <div className="p-4 border rounded-lg flex items-start gap-4 mt-4">
                   <Image
@@ -321,6 +323,10 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
               <Button variant="outline" className="w-full bg-transparent">
                 Print Order
               </Button>
+              <CancelOrderButton
+                orderId={order._id}
+                deliveryStatus={order.deliveryStatus}
+              />
               <ConfirmDeliveryButton
                 orderId={order._id}
                 deliveryStatus={order.deliveryStatus}

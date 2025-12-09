@@ -33,7 +33,7 @@ export interface IOrder extends Document {
   status: "PENDING" | "PAID" | "FAILED" | "CANCELLED";
   transactionId: string;
   paymentMethod: "phonepe" | "cod";
-  deliveryStatus: "PROCESSING" | "DISPATCHED" | "DELIVERED";
+  deliveryStatus: "PROCESSING" | "DISPATCHED" | "DELIVERED" | "CANCELLED";
   orderType: "quick" | "scheduled";
   deliverySlot?: string | null;
   deliveryAddress: IDeliveryAddress;
@@ -87,7 +87,7 @@ const OrderSchema = new Schema<IOrder>(
     },
     deliveryStatus: {
       type: String,
-      enum: ["PROCESSING", "DISPATCHED", "DELIVERED"],
+      enum: ["PROCESSING", "DISPATCHED", "DELIVERED", "CANCELLED"],
       default: "PROCESSING",
     },
     orderType: {
@@ -137,7 +137,7 @@ OrderSchema.pre<IOrder>("save", async function (next) {
 OrderSchema.methods.verifyOtp = async function (
   otp: string
 ): Promise<{ success: boolean; message: string }> {
-  
+
 
   if (this.otp !== otp) {
     return { success: false, message: "Invalid or expired OTP" };

@@ -19,13 +19,14 @@ const statusColors = {
   PENDING: "bg-yellow-100 text-yellow-800",
   PAID: "bg-green-100 text-green-800",
   FAILED: "bg-red-100 text-red-800",
-  CANCELLED: "bg-gray-100 text-gray-800",
+  CANCELLED: "bg-red-100 text-red-800",
 }
 
 const deliveryStatusColors = {
   PROCESSING: "bg-blue-100 text-blue-800",
   DISPATCHED: "bg-orange-100 text-orange-800",
   DELIVERED: "bg-green-100 text-green-800",
+  CANCELLED: "bg-red-100 text-red-800",
 }
 
 export function OrdersList({ orders, isLoading, error }: OrdersListProps) {
@@ -121,11 +122,11 @@ export function OrdersList({ orders, isLoading, error }: OrdersListProps) {
       {/* Mobile View */}
       <div className="block md:hidden space-y-3 p-4">
         {sortedOrders.map((order) => {
-          const displayStatus =order.deliveryStatus?.toUpperCase() === "DELIVERED"
-          ? "PAID"
-          : order.paymentMethod === "COD"
-          ? order.paymentStatus
-          : order.status;
+          const displayStatus = order.deliveryStatus?.toUpperCase() === "DELIVERED"
+            ? "PAID"
+            : order.paymentMethod === "cod"
+              ? order.paymentStatus
+              : order.status;
           return (
             <Card key={order._id?.toString()} className="border border-gray-100 hover:shadow-sm transition-shadow">
               <CardContent className="p-4">
@@ -207,11 +208,11 @@ export function OrdersList({ orders, isLoading, error }: OrdersListProps) {
           </TableHeader>
           <TableBody>
             {sortedOrders.map((order) => {
-              const displayStatus =order.deliveryStatus?.toUpperCase() === "DELIVERED"
-              ? "PAID"
-              : order.paymentMethod === "COD"
-              ? order.paymentStatus
-              : order.status;
+              const displayStatus = order.deliveryStatus?.toUpperCase() === "DELIVERED"
+                ? "PAID"
+                : order.paymentMethod === "cod"
+                  ? order.paymentStatus
+                  : order.status;
               return (
                 <TableRow key={order._id?.toString()} className="border-gray-100 hover:bg-gray-50/50">
                   <TableCell className="font-mono text-sm">#{order.transactionId?.slice(-8)}</TableCell>
