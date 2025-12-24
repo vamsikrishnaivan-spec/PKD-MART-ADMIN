@@ -19,7 +19,7 @@ import {
 
 const categories = [
   "vegetables",
-  "fruits",
+  "bakery items",
   "dairy",
   "essentials",
   "snacks",

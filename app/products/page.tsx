@@ -9,6 +9,10 @@ import { useQuery } from "@tanstack/react-query"
 import { ProductsList } from "@/components/products-list"
 import { Plus, Package, DollarSign, Tag } from "lucide-react"
 import Link from "next/link"
+import { useState } from "react"
+import { Input } from "@/components/ui/input"
+import { Search } from "lucide-react"
+
 
 async function fetchProducts() {
   const response = await fetch("/api/products")
@@ -28,8 +32,17 @@ export default function ProductsPage() {
     queryFn: fetchProducts,
   })
 
+  const [search, setSearch] = useState("")
   const totalValue = products.reduce((sum: number, product: any) => sum + (product.sellingPrice || 0), 0)
   const categories = [...new Set(products.map((p: any) => p.category))].length
+  const filteredProducts = products.filter((product: any) => {
+  const query = search.toLowerCase()
+  return (
+    product.name?.toLowerCase().includes(query) ||
+    product.category?.toLowerCase().includes(query)
+  )
+})
+
 
   return (
     <div className="p-6 space-y-6">
@@ -107,16 +120,32 @@ export default function ProductsPage() {
           </CardContent>
         </Card>
       </div>
+      <div className="flex items-center gap-3 max-w-md">
+        <div className="relative w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Search products by name or category..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+      </div>
+
 
       {/* Products List */}
       <Card className="border-0 shadow-sm bg-white">
         <CardHeader className="border-b border-gray-100">
           <CardTitle className="text-xl font-semibold text-gray-900">
-            All Products ({isLoading ? "..." : products.length})
+           All Products ({isLoading ? "..." : filteredProducts.length})
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <ProductsList products={products} isLoading={isLoading} error={error} />
+          <ProductsList
+            products={filteredProducts}
+            isLoading={isLoading}
+            error={error}
+          />
         </CardContent>
       </Card>
     </div>
