@@ -82,7 +82,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "Price must be greater than 0" }, { status: 400 })
     }
 
-    const validCategories = ["vegetables", "fruits", "dairy", "essentials", "snacks", "instant-food"]
+    const validCategories = ["vegetables", "fruits", "dairy", "essentials", "snacks", "instant-food", "bakery-items"]
     if (!validCategories.includes(category)) {
       return NextResponse.json({ error: "Invalid category" }, { status: 400 })
     }
@@ -167,7 +167,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
     // 🔍 Validate category only if provided
     if (updateData.category) {
-      const validCategories = ["vegetables", "fruits", "dairy", "essentials", "snacks", "instant-food"]
+      const validCategories = ["vegetables", "fruits", "dairy", "essentials", "snacks", "instant-food", "bakery-items"]
       if (!validCategories.includes(updateData.category)) {
         return NextResponse.json({ error: "Invalid category" }, { status: 400 })
       }
