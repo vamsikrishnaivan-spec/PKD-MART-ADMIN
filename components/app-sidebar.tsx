@@ -1,6 +1,6 @@
 "use client"
 
-import { BarChart3, Package, ShoppingCart, Users, Home, TrendingUp } from "lucide-react"
+import { BarChart3, Package, ShoppingCart, Users, Home, TrendingUp, Layers, Image as ImageIcon } from "lucide-react"
 import { useSession, signOut } from "next-auth/react"
 import {
   Sidebar,
@@ -37,6 +37,20 @@ const menuItems = [
     url: "/products",
     icon: Package,
     description: "Full Management",
+    badge: "CRUD",
+  },
+  {
+    title: "Categories",
+    url: "/categories",
+    icon: Layers,
+    description: "Manage Categories",
+    badge: "CRUD",
+  },
+  {
+    title: "Banners",
+    url: "/banners",
+    icon: ImageIcon,
+    description: "Manage Banners",
     badge: "CRUD",
   },
   {
@@ -99,17 +113,17 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               ))}
               {session ? (
-          <button
-            className="text-sm text-red-500"
-            onClick={() => signOut({ callbackUrl: "/login" })}
-          >
-            Logout
-          </button>
-        ) : (
-          <Link href="/login" className="text-sm text-blue-600">
-            Login
-          </Link>
-        )}
+                <button
+                  className="text-sm text-red-500"
+                  onClick={() => signOut({ callbackUrl: "/login" })}
+                >
+                  Logout
+                </button>
+              ) : (
+                <Link href="/login" className="text-sm text-blue-600">
+                  Login
+                </Link>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

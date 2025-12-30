@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -16,19 +16,13 @@ import {
   SelectContent,
   SelectItem,
 } from "./ui/select";
+import Link from "next/link"
 
-const categories = [
-  "vegetables",
-  "bakery-items",
-  "dairy",
-  "essentials",
-  "snacks",
-  "instant-food",
-  "fast-food",
-  "break fast"
-];
-
-type Category = typeof categories[number];
+interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+}
 
 async function createProduct(data: any) {
   const response = await fetch("/api/products", {
@@ -62,11 +56,13 @@ interface ProductFormProps {
 }
 
 export function ProductForm({ mode = "create", initialData }: ProductFormProps) {
+  const [categories, setCategories] = useState<Category[]>([]);
   const [formData, setFormData] = useState({
     upc: initialData?.upc || "",
     name: initialData?.name || "",
     brand: initialData?.brand || "",
     category: initialData?.category || "",
+    categoryId: initialData?.categoryId || "",
     subcategory: initialData?.subcategory || "",
     manufacturer: initialData?.manufacturer || "",
     model: initialData?.model || "",
@@ -84,6 +80,21 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch("/api/categories");
+        if (res.ok) {
+          const data = await res.json();
+          setCategories(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch categories", error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   const mutation = useMutation({
     mutationFn: (data: any) =>
       mode === "create" ? createProduct(data) : updateProduct(initialData?.id!, data),
@@ -99,6 +110,7 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
           name: "",
           brand: "",
           category: "",
+          categoryId: "",
           subcategory: "",
           manufacturer: "",
           model: "",
@@ -201,6 +213,17 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
+  const handleCategoryChange = (value: string) => {
+    const selectedCategory = categories.find((cat) => cat._id === value);
+    if (selectedCategory) {
+      setFormData((prev) => ({
+        ...prev,
+        categoryId: selectedCategory._id,
+        category: selectedCategory.name,
+      }));
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* UPC Autofill Section */}
@@ -241,22 +264,28 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
         </div>
         <div>
           <Label>Category <span style={{ color: "red" }}>*</span></Label>
-          <Select
-            value={formData.category}
-            onValueChange={(value) => handleInputChange("category", value as Category)}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat.charAt(0).toUpperCase() + cat.slice(1).replace("-", " ")}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
+          <div className="flex gap-2 items-center">
+            <Select
+              value={formData.categoryId || (categories.find(c => c.name === formData.category)?._id) || ""}
+              onValueChange={handleCategoryChange}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((cat) => (
+                  <SelectItem key={cat._id} value={cat._id}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Link href="/categories/new" target="_blank">
+              <Button type="button" variant="outline" size="icon" title="Add New Category">
+                +
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <div>
