@@ -17,6 +17,7 @@ import {
   SelectItem,
 } from "./ui/select";
 import Link from "next/link"
+import { useTelegramUpload } from "@/hooks/use-telegram-upload"
 
 interface Category {
   _id: string;
@@ -74,7 +75,7 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
     imageUrl: initialData?.imageUrl || "",
   })
 
-  const [uploading, setUploading] = useState(false)
+  const { upload: uploadToTelegram, loading: isUploading, error: uploadError } = useTelegramUpload()
   const [loadingUPC, setLoadingUPC] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
@@ -172,31 +173,21 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
       setLoadingUPC(false)
     }
   }
-  // 📸 Handle Image Upload to Cloudinary
+  // 📸 Handle Image Upload to Telegram
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
     try {
-      setUploading(true)
-      const formDataUpload = new FormData()
-      formDataUpload.append("file", file)
+      const url = await uploadToTelegram(file)
 
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formDataUpload,
-      })
-
-      if (!res.ok) throw new Error("Image upload failed")
-      const data = await res.json()
-
-      setFormData((prev) => ({ ...prev, imageUrl: data.secure_url }))
-      toast({ title: "Image uploaded", description: "Successfully uploaded to Cloudinary." })
+      if (url) {
+        setFormData((prev) => ({ ...prev, imageUrl: url }))
+        toast({ title: "Image uploaded", description: "Successfully uploaded to Telegram." })
+      }
     } catch (error: any) {
       console.error(error)
       toast({ title: "Upload failed", description: error.message, variant: "destructive" })
-    } finally {
-      setUploading(false)
     }
   }
 
@@ -331,7 +322,7 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
           <Label>Upload Image</Label>
           <div className="flex items-center gap-3">
             <Input type="file" accept="image/*" onChange={handleImageUpload} />
-            {uploading && <Loader2 className="h-4 w-4 animate-spin" />}
+            {isUploading && <Loader2 className="h-4 w-4 animate-spin" />}
             {formData.imageUrl && (
               <img
                 src={formData.imageUrl}
