@@ -88,12 +88,14 @@ const BannerForm: React.FC<BannerFormProps> = ({ initialData }) => {
 
         try {
             setImageUploading(true);
-            const formData = new FormData();
-            formData.append("file", file);
 
-            const res = await fetch("/api/upload", {
+            const res = await fetch("/api/upload-to-telegram", {
                 method: "POST",
-                body: formData,
+                headers: {
+                    "x-file-name": file.name,
+                    "x-file-type": file.type,
+                },
+                body: file,
             });
 
             if (!res.ok) {
@@ -101,7 +103,7 @@ const BannerForm: React.FC<BannerFormProps> = ({ initialData }) => {
             }
 
             const data = await res.json();
-            setValue("imageUrl", data.secure_url);
+            setValue("imageUrl", data.url);
             toast.success("Image uploaded successfully");
         } catch (error) {
             console.error(error);
