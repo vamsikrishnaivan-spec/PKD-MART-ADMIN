@@ -7,7 +7,19 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "api.telegram.org",
+        pathname: "/file/**",
+      },
+      {
+        protocol: "https",
+        hostname: "img.pkdmart.com",
+        port: "",
+        pathname: "/**",
+      },
+    ],
   },
 }
 

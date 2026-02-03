@@ -17,7 +17,7 @@ import {
   SelectItem,
 } from "./ui/select";
 import Link from "next/link"
-import { useTelegramUpload } from "@/hooks/use-telegram-upload"
+import { usePkdMartUpload } from "@/hooks/use-pkdmart-upload"
 
 interface Category {
   _id: string;
@@ -75,7 +75,7 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
     imageUrl: initialData?.imageUrl || "",
   })
 
-  const { upload: uploadToTelegram, loading: isUploading, error: uploadError } = useTelegramUpload()
+  const { upload: uploadToPkdMart, loading: isUploading, error: uploadError } = usePkdMartUpload()
   const [loadingUPC, setLoadingUPC] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
@@ -179,11 +179,11 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
     if (!file) return
 
     try {
-      const url = await uploadToTelegram(file)
+      const url = await uploadToPkdMart(file)
 
       if (url) {
         setFormData((prev) => ({ ...prev, imageUrl: url }))
-        toast({ title: "Image uploaded", description: "Successfully uploaded to Telegram." })
+        toast({ title: "Image uploaded", description: "Successfully uploaded to Pkdmart." })
       }
     } catch (error: any) {
       console.error(error)

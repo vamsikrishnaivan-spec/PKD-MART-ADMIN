@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox"
+import { usePkdMartUpload } from "@/hooks/use-pkdmart-upload";
 
 interface BannerFormProps {
     initialData?: {
@@ -26,7 +27,7 @@ interface BannerFormProps {
 const BannerForm: React.FC<BannerFormProps> = ({ initialData }) => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const [imageUploading, setImageUploading] = useState(false);
+    const { upload: uploadToPkdMart, loading: imageUploading } = usePkdMartUpload();
 
     const {
         register,
@@ -87,29 +88,14 @@ const BannerForm: React.FC<BannerFormProps> = ({ initialData }) => {
         if (!file) return;
 
         try {
-            setImageUploading(true);
-
-            const res = await fetch("/api/upload-to-telegram", {
-                method: "POST",
-                headers: {
-                    "x-file-name": file.name,
-                    "x-file-type": file.type,
-                },
-                body: file,
-            });
-
-            if (!res.ok) {
-                throw new Error("Image upload failed");
+            const url = await uploadToPkdMart(file);
+            if (url) {
+                setValue("imageUrl", url);
+                toast.success("Image uploaded successfully");
             }
-
-            const data = await res.json();
-            setValue("imageUrl", data.url);
-            toast.success("Image uploaded successfully");
         } catch (error) {
             console.error(error);
             toast.error("Image upload failed");
-        } finally {
-            setImageUploading(false);
         }
     };
 
