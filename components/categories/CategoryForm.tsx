@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { usePkdMartUpload } from "@/hooks/use-pkdmart-upload";
 
 interface CategoryFormProps {
     initialData?: {
@@ -25,6 +26,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ initialData }) => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [imageUploading, setImageUploading] = useState(false);
+    const { upload: uploadToPkdMart } = usePkdMartUpload();
 
     const {
         register,
@@ -84,22 +86,13 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ initialData }) => {
 
         try {
             setImageUploading(true);
+            const url = await uploadToPkdMart(file);
 
-            const res = await fetch("/api/upload-to-telegram", {
-                method: "POST",
-                headers: {
-                    "x-file-name": file.name,
-                    "x-file-type": file.type,
-                },
-                body: file,
-            });
-
-            if (!res.ok) {
+            if (!url) {
                 throw new Error("Image upload failed");
             }
 
-            const data = await res.json();
-            setValue("imageUrl", data.url);
+            setValue("imageUrl", url);
             toast.success("Image uploaded successfully");
         } catch (error) {
             console.error(error);
