@@ -60,6 +60,13 @@ const menuItems = [
     description: "View Only",
     badge: "Read Only",
   },
+  {
+    title: "Services",
+    url: "/services",
+    icon: Layers,
+    description: "Manage Services",
+    badge: "CRUD",
+  },
 ]
 
 export function AppSidebar() {
