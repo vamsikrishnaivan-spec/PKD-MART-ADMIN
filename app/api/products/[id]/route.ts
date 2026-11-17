@@ -78,6 +78,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "All required fields must be provided" }, { status: 400 })
     }
 
+    // ✅ Images are stored inline in the document; keep them well under MongoDB's 16MB doc limit
+    if (imageUrl.length > 8_000_000) {
+      return NextResponse.json({ error: "Image is too large" }, { status: 400 })
+    }
+
     if (sellingPrice <= 0) {
       return NextResponse.json({ error: "Price must be greater than 0" }, { status: 400 })
     }
@@ -156,6 +161,11 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
             : body[field]
       }
     })
+
+    // ✅ Images are stored inline in the document; keep them well under MongoDB's 16MB doc limit
+    if (updateData.imageUrl && updateData.imageUrl.length > 8_000_000) {
+      return NextResponse.json({ error: "Image is too large" }, { status: 400 })
+    }
 
     // 🔍 Validate sellingPrice if provided
     if (updateData.sellingPrice !== undefined && updateData.sellingPrice <= 0) {

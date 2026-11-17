@@ -29,6 +29,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields", message: "Missing required fields" }, { status: 400 })
     }
 
+    // ✅ Images are stored inline in the document; keep them well under MongoDB's 16MB doc limit
+    if (imageUrl && imageUrl.length > 8_000_000) {
+      return NextResponse.json({ error: "Image is too large", message: "Image is too large" }, { status: 400 })
+    }
+
     // ✅ Price validation
     if (sellingPrice <= 0 || costPrice <= 0) {
       return NextResponse.json({ error: "Selling or cost price must be greater than 0", message: "Selling or cost price must be greater than 0" }, { status: 400 })

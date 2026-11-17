@@ -17,7 +17,6 @@ import {
   SelectItem,
 } from "./ui/select";
 import Link from "next/link"
-import { usePkdMartUpload } from "@/hooks/use-pkdmart-upload"
 
 interface Category {
   _id: string;
@@ -36,6 +35,29 @@ async function createProduct(data: any) {
     throw new Error(error.error || "Failed to create product")
   }
   return response.json()
+}
+
+// Downscale before storing in MongoDB so product documents stay small
+function fileToDataUrl(file: File, max = 1024): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      const scale = Math.min(1, max / Math.max(img.width, img.height))
+      const canvas = document.createElement("canvas")
+      canvas.width = Math.round(img.width * scale)
+      canvas.height = Math.round(img.height * scale)
+      canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height)
+      // keep PNG transparency, compress everything else
+      resolve(canvas.toDataURL(file.type === "image/png" ? "image/png" : "image/jpeg", 0.8))
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error("Could not read image file"))
+    }
+    img.src = url
+  })
 }
 
 async function updateProduct(id: string, data: any) {
@@ -75,7 +97,7 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
     imageUrl: initialData?.imageUrl || "",
   })
 
-  const { upload: uploadToPkdMart, loading: isUploading, error: uploadError } = usePkdMartUpload()
+  const [reading, setReading] = useState(false)
   const [loadingUPC, setLoadingUPC] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
@@ -173,21 +195,25 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
       setLoadingUPC(false)
     }
   }
-  // 📸 Handle Image Upload to Telegram
+  // 📸 Read the image and store it with the product in MongoDB
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    try {
-      const url = await uploadToPkdMart(file)
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Invalid file", description: "Please select an image file.", variant: "destructive" })
+      return
+    }
 
-      if (url) {
-        setFormData((prev) => ({ ...prev, imageUrl: url }))
-        toast({ title: "Image uploaded", description: "Successfully uploaded to Pkdmart." })
-      }
+    try {
+      setReading(true)
+      const dataUrl = await fileToDataUrl(file)
+      setFormData((prev) => ({ ...prev, imageUrl: dataUrl }))
+      toast({ title: "Image added", description: "It will be saved with the product." })
     } catch (error: any) {
-      console.error(error)
       toast({ title: "Upload failed", description: error.message, variant: "destructive" })
+    } finally {
+      setReading(false)
     }
   }
 
@@ -322,7 +348,7 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
           <Label>Upload Image</Label>
           <div className="flex items-center gap-3">
             <Input type="file" accept="image/*" onChange={handleImageUpload} />
-            {isUploading && <Loader2 className="h-4 w-4 animate-spin" />}
+            {reading && <Loader2 className="h-4 w-4 animate-spin" />}
             {formData.imageUrl && (
               <img
                 src={formData.imageUrl}
